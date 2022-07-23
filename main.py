@@ -34,8 +34,6 @@ def http_ok_header(cookies=None):
         return ans
 
 
-
-
 def get_parameters(url, split_url):
     url = url.lstrip("/").split("/")
     dict = {}
@@ -70,6 +68,8 @@ def start_listening(HOST, PORT, function_url_list):
                 while True:
                     data = conn.recv(10240).decode()
                     break
+                if len(data) == 0:
+                    continue
                 split_data = data.split()
                 method = split_data[0]
                 url = split_data[1]
@@ -90,4 +90,5 @@ def start_listening(HOST, PORT, function_url_list):
                 conn.sendall(answer)
 
 
-start_listening(HOST, PORT, [(client_home, "/home/<id>"), (favicon, "/favicon.ico"), (error_file, "/errorfile/assets/<name>")])
+start_listening(HOST, PORT,
+                [(client_home, "/home/<id>"), (favicon, "/favicon.ico")])
