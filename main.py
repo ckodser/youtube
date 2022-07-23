@@ -14,8 +14,14 @@ def to_request_dict(data):
     return request_dict
 
 
-def error_page():
-    return "<html> <head> <body> <h1> URL DONT MATCH ANYTHING! </h1> </body> </head> </html>"
+def error_page(request_dict, function_url_list):
+    list = ""
+    for function, url in function_url_list:
+        url = url.replace("<", "*")
+        url = url.replace(">", "*")
+        list += f"<li> {url} </li>\n"
+
+    return http_ok_header + f"<html> <head> <body> <h1> URL {request_dict['url']} DOESN'T MATCH ANY OF \n <br> <ul> {list} </ul> </h1> </body> </head> </html>"
 
 
 def get_parameters(url, split_url):
@@ -54,27 +60,30 @@ def start_listening(HOST, PORT, function_url_list):
                     data = conn.recv(10240).decode()
                     break
                 split_data = data.split()
-                function = split_data[0]
+                method = split_data[0]
                 url = split_data[1]
                 request_dict = to_request_dict(data.split("\n")[1:])
-                print(function, url, request_dict)
+                print(method, url, request_dict)
+                request_dict["method"] = method
+                request_dict["url"] = url
                 split_url = url.lstrip("/").split("/")
-                answer = error_page()
+                answer = error_page(request_dict, function_url_list)
                 for function, url in function_url_list:
                     if is_match(url, split_url):
                         parameters = get_parameters(url, split_url)
                         parameters["request_dict"] = request_dict
                         answer = function(**parameters)
                         break
-                answer = http_ok_header + answer
-                conn.sendall(answer.encode())
+                if answer.__class__ == str:
+                    answer = answer.encode()
+                conn.sendall(answer)
 
 
 def client_home(request_dict, id):
     list = ""
     for k in request_dict.keys():
         list += f"<li> {k}={request_dict[k]}</li>\n"
-    return f"<html> <head> <body> <h1> id={id}</h1> <ul>{list} </ul></body> </head> </html>"
+    return http_ok_header + f"<html> <head> <body> <h1> id={id}</h1> <ul>{list} </ul></body> </head> </html>"
 
 
 start_listening(HOST, PORT, [(client_home, "/home/<id>")])
