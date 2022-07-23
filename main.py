@@ -1,6 +1,10 @@
 import random
 import socket
 
+from templates.client_home.view import client_home
+from templates.error.view import error_page, error_file
+from templates.favicon.view import favicon
+
 HOST = "127.0.0.2"  # Standard loopback interface address (localhost)
 PORT = 8080  # Port to listen on (non-privileged ports are > 1023)
 
@@ -30,15 +34,6 @@ def http_ok_header(cookies=None):
         return ans
 
 
-def error_page(request_dict, function_url_list):
-    list = ""
-    for function, url in function_url_list:
-        url = url.replace("<", "*")
-        url = url.replace(">", "*")
-        list += f"<li> {url} </li>\n"
-
-    return http_ok_header([("bardia1", 4), ("bardia2",
-                                            "rtrt")]) + f"<html> <head> <body> <h1> URL {request_dict['url']} DOESN'T MATCH ANY OF \n <br> <ul> {list} </ul> </h1> </body> </head> </html>"
 
 
 def get_parameters(url, split_url):
@@ -95,25 +90,4 @@ def start_listening(HOST, PORT, function_url_list):
                 conn.sendall(answer)
 
 
-def client_home(request_dict, id):
-    list = ""
-    for k in request_dict.keys():
-        if k != "Cookie":
-            list += f"<li> {k}={request_dict[k]}</li>\n"
-    cookie_list = ""
-    if "Cookie" in request_dict:
-        for cookie_name in request_dict["Cookie"].keys():
-            cookie_list += f"<li> {cookie_name}={request_dict['Cookie'][cookie_name]}</li>\n"
-    return http_ok_header() + f"<html> <head> <body> <h1> id={id}</h1> <ul>{list} </ul> <h2> cookies </h2> <ul> {cookie_list}</ul> </body> </head> </html>"
-
-
-def favicon(request_dict):
-    with open("favicon.ico", "rb") as f:
-        ans = 'HTTP/1.1 200 OK\r\n'.encode()
-        ans += "Content-Type: image/jpeg\r\n".encode()
-        ans += "Accept-Ranges: bytes\r\n\r\n".encode()
-        ans += f.read()
-        return ans
-
-
-start_listening(HOST, PORT, [(client_home, "/home/<id>"), (favicon, "/favicon.ico")])
+start_listening(HOST, PORT, [(client_home, "/home/<id>"), (favicon, "/favicon.ico"), (error_file, "/errorfile/assets/<name>")])
