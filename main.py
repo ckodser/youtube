@@ -1,7 +1,7 @@
 import random
 import socket
 from templates.login.view import login, login_helper, login_action
-from templates.signin.view import signin, signin_helper, signin_action
+from templates.signin.view import signin, signin_helper
 from templates.client_home.view import client_home
 from templates.error.view import error_page, error_file
 from templates.favicon.view import favicon
@@ -71,7 +71,6 @@ def start_listening(HOST, PORT, function_url_list):
             s.listen()
             conn, addr = s.accept()
             with conn:
-                print(f"Connected by {addr}")
                 data = ""
                 while True:
                     data = conn.recv(10240).decode()
@@ -82,11 +81,11 @@ def start_listening(HOST, PORT, function_url_list):
                 method = split_data[0]
                 url = split_data[1]
                 request_dict = to_request_dict(data.split("\n")[1:])
-                print(method, url, request_dict)
+
                 request_dict["method"] = method
                 request_dict["url"] = url
                 split_url = url.lstrip("/").split("/")
-                answer = error_page(request_dict, function_url_list)
+                answer = 404
                 for function, url in function_url_list:
                     if is_match(url, split_url):
                         parameters = get_parameters(url, split_url)
@@ -96,6 +95,11 @@ def start_listening(HOST, PORT, function_url_list):
                 if answer is None:
                     conn.close()
                     continue
+                if answer == 404:
+                    print(f"Connected by {addr}")
+                    print(method, url, request_dict)
+                    print("ERROR")
+                    answer = error_page(request_dict, function_url_list)
                 if answer.__class__ == str:
                     answer = answer.encode()
                 conn.sendall(answer)
@@ -105,5 +109,5 @@ print("open site by: ", "http://" + str(HOST) + ":" + str(PORT) + "/login")
 start_listening(HOST, PORT,
                 [(client_home, "/home/<id>"), (favicon, "/favicon.ico")
                     , (login, "/login"), (login_helper, "/templates/login/<+>"), (login_action, "/<login?email=+>"),
-                 (signin, "/signin"), (signin_helper, "/templates/signin/<+>"), (signin_action, "/<login?email=+>"),
+                 (signin, "/signin"), (signin_helper, "/templates/signin/<+>"),
                  ])

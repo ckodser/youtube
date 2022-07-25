@@ -1,5 +1,5 @@
 from ..utils import get_file_packet
-
+from ..client_home.view import client_home
 
 def http_ok_header(cookies=None):
     if cookies is None:
@@ -17,19 +17,10 @@ def signin(request_dict):
         with open("templates/signin/index.html", "r", encoding="utf-8") as index:
             return http_ok_header() + index.read()
     else:
-        return None
+        return client_home(request_dict, "SIGNIN POST")
 
 
 def signin_helper(request_dict, rest):
     file_location = "templates/signin/" + "/".join(rest)
     return get_file_packet(file_location)
 
-
-def signin_action(request_dict, rest):
-    raise ValueError
-    url: str = rest[0]
-    email_end = url.find("email=") + 6
-    pass_end = url.find("pass=") + 5
-    email = url[email_end:pass_end - 6]
-    pass_word = url[pass_end:]
-    print(email, pass_word)

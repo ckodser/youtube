@@ -1,7 +1,6 @@
 def get_file_packet(file_location):
     if file_location.find("?") != -1:
         file_location = file_location[:file_location.find("?")]
-        print(file_location)
     with open(file_location, "rb") as f:
         ans = 'HTTP/1.1 200 OK\r\n'.encode()
         if file_location.endswith("css"):
