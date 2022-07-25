@@ -1,6 +1,7 @@
 import random
 import socket
-
+from templates.login.view import login, login_helper, login_action
+from templates.signin.view import signin, signin_helper, signin_action
 from templates.client_home.view import client_home
 from templates.error.view import error_page, error_file
 from templates.favicon.view import favicon
@@ -39,17 +40,24 @@ def get_parameters(url, split_url):
     dict = {}
     for i, part in enumerate(url):
         if part[0] == "<":
-            dict[part[1:-1]] = split_url[i]
+            if part[len(part) - 2] == "+":
+                dict["rest"] = split_url[i:]
+                break
+            else:
+                dict[part[1:-1]] = split_url[i]
     return dict
 
 
 def is_match(url, split_url):
     url = url.lstrip("/").split("/")
-    if len(url) != len(split_url):
-        return False
     for i, part in enumerate(url):
+        if len(split_url) <= i:
+            return False
         if part[0] == "<":
-            pass
+            if part[len(part) - 2] == "+":
+                if split_url[i].startswith(part[1:-2]):
+                    return True
+                return False
         else:
             if part != split_url[i]:
                 return False
@@ -85,10 +93,17 @@ def start_listening(HOST, PORT, function_url_list):
                         parameters["request_dict"] = request_dict
                         answer = function(**parameters)
                         break
+                if answer is None:
+                    conn.close()
+                    continue
                 if answer.__class__ == str:
                     answer = answer.encode()
                 conn.sendall(answer)
 
 
+print("open site by: ", "http://" + str(HOST) + ":" + str(PORT) + "/login")
 start_listening(HOST, PORT,
-                [(client_home, "/home/<id>"), (favicon, "/favicon.ico")])
+                [(client_home, "/home/<id>"), (favicon, "/favicon.ico")
+                    , (login, "/login"), (login_helper, "/templates/login/<+>"), (login_action, "/<login?email=+>"),
+                 (signin, "/signin"), (signin_helper, "/templates/signin/<+>"), (signin_action, "/<login?email=+>"),
+                 ])
