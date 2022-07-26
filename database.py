@@ -66,6 +66,9 @@ class Database:
         if type not in ['admin', 'user']:
             raise Exception("Invalid type!")
 
+        if self.get_account_by_username(user_dict['username']):
+            raise Exception("This username is already exist!")
+
         if 'striked' not in user_dict.keys():
             user_dict['striked'] = 0
 
@@ -127,4 +130,98 @@ class Database:
             self.cursor.execute("""UPDATE users SET striked=:striked
                                    WHERE username=:username AND type=:type""",
                                 {'username': username, 'type': 'client', 'striked': strike})
+
+### Videos' methods
+
+    def insert_videos(self, video_dict):
+        if 'deleted' not in video_dict.keys():
+            video_dict['deleted'] = 0
+        if 'tag' not in video_dict.keys():
+            video_dict['tag'] = ""
+
+        with self.conn:
+            columns = ', '.join(user_dict.keys())
+            placeholders = ':' + ', :'.join(user_dict.keys())
+            query = 'INSERT INTO videos (%s) VALUES (%s)' % (columns, placeholders)
+            # print(query)
+            self.cursor.execute(query, user_dict)
+
+    def delete_video(self, video_id):
+        with self.conn:
+            self.cursor.execute("""UPDATE videos SET deleted=:deleted
+                                   WHERE rowid=:video_id""",
+                                {'video_id': video_id, 'deleted': 1})
+
+    def get_video_by_id(self, video_id):
+        self.cursor.execute("""SELECT rowid, * FROM videos
+                               WHERE rowid=:video_id""")
+        founds = self.cursor.fetchall()
+        if founds:
+            assert len(founds) == 1
+            video = founds[0]
+            video_dict = {"video_id": video[0], "address": video[1], "name": video[2], "username": video[3],
+                         "tag": video[4], "deleted": video[5]}
+            return video_dict
+        else:
+            return None
+
+    def get_all_videos(self):
+        self.cursor.execute("SELECT rowid, * FROM videos")
+        founds = self.cursor.fetchall()
+        videos = []
+        for video in founds:
+            video_dict = {"video_id": video[0], "address": video[1], "name": video[2], "username": video[3],
+                         "tag": video[4], "deleted": video[5]}
+            videos.append(video_dict)
+        return videos
+
+    def tag_the_video(self, video_id, tag):
+        with self.conn:
+            self.cursor.execute("""UPDATE videos SET tag=:tag
+                                   WHERE rowid=:video_id""",
+                                {'video_id': video_id, 'tag': tag})
+
+    def add_comment_on_video(self, video_id, username, comment):
+        ### A user can submit multiple commnets for a video.
+        with self.conn:
+            self.cursor.execute('INSERT INTO video_comment VALUES (?,?,?)', (video_id, username, comment))
+
+    def add_change_liked_status_of_video(self, video_id, username, liked):
+        self.cursor.execute("""SELECT * FROM video_like
+                                       WHERE video_id=:video_id AND username=:username""",
+                            {'video_id': video_id, 'username'=:username})
+        founds = self.cursor.fetchall()
+        if founds:
+            assert len(founds) == 1
+            with self.conn:
+                self.cursor.execute("""UPDATE video_like SET liked=:liked
+                                                   WHERE video_id=:video_id AND username=:username""",
+                                    {'video_id': video_id, 'username': username, 'liked': liked})
+        else:
+            with self.conn:
+                self.cursor.execute('INSERT INTO video_like VALUES (?,?,?)', (video_id, username, liked))
+
+    def get_video_comments(self, video_id):
+        self.cursor.execute("""SELECT username, comment FROM video_comment
+                               WHERE video_id=:video_id""",
+                            {'video_id': video_id})
+        founds = self.cursor.fetchall()
+        comments = []
+        for comment in founds:
+            comment_dict = {"username": comment[0], "comment": comment[1]}
+            comments.append(comment_dict)
+        return comments
+
+    def get_video_likes(self, video_id):
+        self.cursor.execute("""SELECT username, liked FROM video_like
+                                       WHERE video_id=:video_id""",
+                            {'video_id': video_id})
+        founds = self.cursor.fetchall()
+        likes, dislikes = 0, 0
+        for like_ent in founds:
+            if like_ent[1] == 1:
+                likes += 1
+            else:
+                dislikes += 1
+        return {'likes': likes, 'dislikes': dislikes}
 
