@@ -1,6 +1,7 @@
 import random
 import socket
-
+from templates.login.view import login, login_helper, login_action
+from templates.signin.view import signin, signin_helper
 from templates.client_home.view import client_home
 from templates.error.view import error_page, error_file
 from templates.favicon.view import favicon
@@ -39,17 +40,24 @@ def get_parameters(url, split_url):
     dict = {}
     for i, part in enumerate(url):
         if part[0] == "<":
-            dict[part[1:-1]] = split_url[i]
+            if part[len(part) - 2] == "+":
+                dict["rest"] = split_url[i:]
+                break
+            else:
+                dict[part[1:-1]] = split_url[i]
     return dict
 
 
 def is_match(url, split_url):
     url = url.lstrip("/").split("/")
-    if len(url) != len(split_url):
-        return False
     for i, part in enumerate(url):
+        if len(split_url) <= i:
+            return False
         if part[0] == "<":
-            pass
+            if part[len(part) - 2] == "+":
+                if split_url[i].startswith(part[1:-2]):
+                    return True
+                return False
         else:
             if part != split_url[i]:
                 return False
@@ -63,7 +71,6 @@ def start_listening(HOST, PORT, function_url_list):
             s.listen()
             conn, addr = s.accept()
             with conn:
-                print(f"Connected by {addr}")
                 data = ""
                 while True:
                     data = conn.recv(10240).decode()
@@ -74,21 +81,33 @@ def start_listening(HOST, PORT, function_url_list):
                 method = split_data[0]
                 url = split_data[1]
                 request_dict = to_request_dict(data.split("\n")[1:])
-                print(method, url, request_dict)
                 request_dict["method"] = method
                 request_dict["url"] = url
+                request_dict["body"] = data[data.find("\r\n\r\n") + 4:]
                 split_url = url.lstrip("/").split("/")
-                answer = error_page(request_dict, function_url_list)
+                answer = 404
                 for function, url in function_url_list:
                     if is_match(url, split_url):
                         parameters = get_parameters(url, split_url)
                         parameters["request_dict"] = request_dict
                         answer = function(**parameters)
                         break
+                if answer is None:
+                    conn.close()
+                    continue
+                if answer == 404:
+                    print(f"Connected by {addr}")
+                    print(method, url, request_dict)
+                    print("ERROR")
+                    answer = error_page(request_dict, function_url_list)
                 if answer.__class__ == str:
                     answer = answer.encode()
                 conn.sendall(answer)
 
 
+print("open site by: ", "http://" + str(HOST) + ":" + str(PORT) + "/login")
 start_listening(HOST, PORT,
-                [(client_home, "/home/<id>"), (favicon, "/favicon.ico")])
+                [(client_home, "/home/<id>"), (favicon, "/favicon.ico")
+                    , (login, "/login"), (login_helper, "/templates/login/<+>"), (login_action, "/<login?email=+>"),
+                 (signin, "/signin"), (signin_helper, "/templates/signin/<+>"),
+                 ])
