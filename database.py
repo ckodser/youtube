@@ -1,4 +1,6 @@
 import sqlite3
+import datetime
+
 
 DATABASE_NAME = 'Youtube.db'
 MANAGER = {'username': 'manager', 'password': 'supreme_manager#2022', 'type': 'manager',
@@ -225,3 +227,40 @@ class Database:
                 dislikes += 1
         return {'likes': likes, 'dislikes': dislikes}
 
+### Token methods
+
+    def get_a_new_token_for_user(self, user_dict):
+        if 'time' not in user_dict.keys():
+            user_dict['time'] = datetime.datetime.now()
+        with self.conn:
+            columns = ', '.join(user_dict.keys())
+            placeholders = ':' + ', :'.join(user_dict.keys())
+            query = 'INSERT INTO tokens (%s) VALUES (%s)' % (columns, placeholders)
+            # print(query)
+            self.cursor.execute(query, user_dict)
+        return self.cursor.lastrowid
+
+    def delete_token(self, token_id):
+        with self.conn:
+            self.cursor.execute("""DELETE FROM tokens WHERE rowid=:token_id""",
+                                {'token_id': token_id})
+
+    def update_token_time(self, token_id):
+        dt = datetime.datetime.now()
+        with self.conn:
+            self.cursor.execute("""UPDATE tokens SET time=:time
+                                               WHERE token_id=:token_id""",
+                                {'token_id': token_id, 'time': dt})
+
+    def get_token_by_id(self, token_id):
+        self.cursor.execute("""SELECT rowid, * FROM tokens
+                                               WHERE token_id=:token_id""",
+                            {'token_id': token_id})
+        founds = self.cursor.fetchall()
+        if founds:
+            assert len(founds) == 1
+            token = founds[0]
+            token_dict = {'token_id': token[0], 'username': token[1], 'time': token[2]}
+            return token_dict
+        else:
+            return None
