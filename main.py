@@ -81,9 +81,9 @@ def start_listening(HOST, PORT, function_url_list):
                 method = split_data[0]
                 url = split_data[1]
                 request_dict = to_request_dict(data.split("\n")[1:])
-
                 request_dict["method"] = method
                 request_dict["url"] = url
+                request_dict["body"] = data[data.find("\r\n\r\n") + 4:]
                 split_url = url.lstrip("/").split("/")
                 answer = 404
                 for function, url in function_url_list:
