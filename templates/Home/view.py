@@ -12,8 +12,10 @@ def user_home(request_dict, user_name, user_info):
              <br>
             <a href="/tikets"> tikets </a> 
             <br>
-            <input type="file">
-            
+            <form action="videoUpload">
+              <input type="file" id="videoid" accept="video/mp4" name="video">
+              <input type="submit">
+            </form>
             </body>             
             </head> </html>
                         '''
