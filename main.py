@@ -28,7 +28,7 @@ def to_request_dict(data):
         cookies = request_dict["Cookie"].split(";")
         cookies_dict = {}
         for cookie in cookies:
-            cookies_dict[cookie.split("=")[0]] = cookie.split("=")[1]
+            cookies_dict[cookie.split("=")[0].lstrip().rstrip()] = cookie.split("=")[1].lstrip().rstrip()
         request_dict["Cookie"] = cookies_dict
     return request_dict
 
