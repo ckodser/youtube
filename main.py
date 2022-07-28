@@ -5,9 +5,10 @@ from templates.signin.view import signin, signin_helper
 from templates.client_home.view import client_home
 from templates.error.view import error_page, error_file
 from templates.favicon.view import favicon
+from database import Database
 
 HOST = "127.0.0.2"  # Standard loopback interface address (localhost)
-PORT = 8080  # Port to listen on (non-privileged ports are > 1023)
+PORT = 8081  # Port to listen on (non-privileged ports are > 1023)
 
 
 def to_request_dict(data):
@@ -105,9 +106,12 @@ def start_listening(HOST, PORT, function_url_list):
                 conn.sendall(answer)
 
 
-print("open site by: ", "http://" + str(HOST) + ":" + str(PORT) + "/login")
-start_listening(HOST, PORT,
-                [(client_home, "/home/<id>"), (favicon, "/favicon.ico")
-                    , (login, "/login"), (login_helper, "/templates/login/<+>"), (login_action, "/<login?email=+>"),
-                 (signin, "/signin"), (signin_helper, "/templates/signin/<+>"),
-                 ])
+if __name__ == "__main__":
+    database = Database()
+    database.first_time_setup()
+    print("open site by: ", "http://" + str(HOST) + ":" + str(PORT) + "/login")
+    start_listening(HOST, PORT,
+                    [(client_home, "/home/<id>"), (favicon, "/favicon.ico")
+                        , (login, "/login"), (login_helper, "/templates/login/<+>"), (login_action, "/<login?email=+>"),
+                     (signin, "/signin"), (signin_helper, "/templates/signin/<+>"),
+                     ])

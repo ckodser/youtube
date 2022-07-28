@@ -1,10 +1,10 @@
 import sqlite3
 import datetime
 
-
 DATABASE_NAME = 'Youtube.db'
 MANAGER = {'username': 'manager', 'password': 'supreme_manager#2022', 'type': 'manager',
-                       'striked': 0, 'approved': 1}
+           'striked': 0, 'approved': 1}
+
 
 class Database:
 
@@ -59,9 +59,10 @@ class Database:
                         )""")
 
             self.cursor.execute("INSERT INTO users VALUES (:username, :password, :type, :striked, :approved)",
-                                (MANAGER['username'], MANAGER['password'], MANAGER['type'], MANAGER['striked'], MANAGER['approved']))
+                                (MANAGER['username'], MANAGER['password'], MANAGER['type'], MANAGER['striked'],
+                                 MANAGER['approved']))
 
-### Users' methods
+    ### Users' methods
 
     def insert_user(self, user_dict):
         type = user_dict['type']
@@ -98,7 +99,8 @@ class Database:
         if founds:
             assert len(founds) == 1
             user = founds[0]
-            user_dict = {"username": user[0], "password": user[1], "type": user[2], "striked": user[3], "approved": user[4]}
+            user_dict = {"username": user[0], "password": user[1], "type": user[2], "striked": user[3],
+                         "approved": user[4]}
         else:
             return None
 
@@ -133,7 +135,7 @@ class Database:
                                    WHERE username=:username AND type=:type""",
                                 {'username': username, 'type': 'client', 'striked': strike})
 
-### Videos' methods
+    ### Videos' methods
 
     def insert_videos(self, video_dict):
         if 'deleted' not in video_dict.keys():
@@ -142,11 +144,11 @@ class Database:
             video_dict['tag'] = ""
 
         with self.conn:
-            columns = ', '.join(user_dict.keys())
-            placeholders = ':' + ', :'.join(user_dict.keys())
+            columns = ', '.join(video_dict.keys())
+            placeholders = ':' + ', :'.join(video_dict.keys())
             query = 'INSERT INTO videos (%s) VALUES (%s)' % (columns, placeholders)
             # print(query)
-            self.cursor.execute(query, user_dict)
+            self.cursor.execute(query, video_dict)
 
     def delete_video(self, video_id):
         with self.conn:
@@ -162,7 +164,7 @@ class Database:
             assert len(founds) == 1
             video = founds[0]
             video_dict = {"video_id": video[0], "address": video[1], "name": video[2], "username": video[3],
-                         "tag": video[4], "deleted": video[5]}
+                          "tag": video[4], "deleted": video[5]}
             return video_dict
         else:
             return None
@@ -173,7 +175,7 @@ class Database:
         videos = []
         for video in founds:
             video_dict = {"video_id": video[0], "address": video[1], "name": video[2], "username": video[3],
-                         "tag": video[4], "deleted": video[5]}
+                          "tag": video[4], "deleted": video[5]}
             videos.append(video_dict)
         return videos
 
@@ -191,7 +193,7 @@ class Database:
     def add_change_liked_status_of_video(self, video_id, username, liked):
         self.cursor.execute("""SELECT * FROM video_like
                                        WHERE video_id=:video_id AND username=:username""",
-                            {'video_id': video_id, 'username'=:username})
+                            {'video_id': video_id, 'username': username})
         founds = self.cursor.fetchall()
         if founds:
             assert len(founds) == 1
@@ -227,7 +229,7 @@ class Database:
                 dislikes += 1
         return {'likes': likes, 'dislikes': dislikes}
 
-### Token methods
+    ### Token methods
 
     def get_a_new_token_for_user(self, user_dict):
         if 'time' not in user_dict.keys():
