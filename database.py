@@ -139,6 +139,17 @@ class Database:
             users.append(user_dict)
         return users
 
+    def get_all_striked_users(self):
+        self.cursor.execute("SELECT * FROM users WHERE type=:type AND striked=:striked",
+                            {'type': 'user', "striked": 1})
+        founds = self.cursor.fetchall()
+        users = []
+        for user in founds:
+            user_dict = {"username": user[0], "password": user[1], "type": user[2], "striked": user[3],
+                         "approved": user[4]}
+            users.append(user_dict)
+        return users
+
     def delete_user(self, username):
         with self.conn:
             self.cursor.execute("""DELETE FROM users WHERE username=:username""",
