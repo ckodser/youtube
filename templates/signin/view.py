@@ -1,15 +1,8 @@
 from ..utils import get_file_packet
 from ..client_home.view import client_home
-
-def http_ok_header(cookies=None):
-    if cookies is None:
-        return "HTTP/1.1 200 OK\r\n\r\n"
-    else:
-        ans = f"HTTP/1.1 200 OK\r\n"
-        for cookie_name, cookie_value in cookies:
-            ans += f"Set-Cookie: {cookie_name}={cookie_value}\r\n"
-        ans += "\r\n"
-        return ans
+from database import Database
+from ..login.view import login
+from templates.utils import http_ok_header
 
 
 def signin(request_dict):
@@ -17,10 +10,24 @@ def signin(request_dict):
         with open("templates/signin/index.html", "r", encoding="utf-8") as index:
             return http_ok_header() + index.read()
     else:
-        return client_home(request_dict, "SIGNIN POST")
+        info = {}
+        data = request_dict["body"].split("&")
+        for field in data:
+            field = field.split("=")
+            info[field[0]] = field[1]
+        if info["password"] != info["re_password"] or info["agree-term"] != "on" or info["submit"] != 'Sign+up':
+            with open("templates/signin/index.html", "r", encoding="utf-8") as index:
+                return http_ok_header() + index.read()
+        d = Database()
+        print("SIGN IN",info["email"])
+        d.insert_user({"username": info["email"],
+                       "password": info["password"],
+                       "type": request_dict["url"].lstrip("/signin")})
+        return http_ok_header() + f'''
+                           <html> <head> <meta http-equiv="refresh" content="0; url=/login" /> <body>  </body> </head> </html>
+                           '''
 
 
 def signin_helper(request_dict, rest):
     file_location = "templates/signin/" + "/".join(rest)
     return get_file_packet(file_location)
-

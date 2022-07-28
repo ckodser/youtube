@@ -1,12 +1,4 @@
-def http_ok_header(cookies=None):
-    if cookies is None:
-        return "HTTP/1.1 200 OK\r\n\r\n"
-    else:
-        ans = f"HTTP/1.1 200 OK\r\n"
-        for cookie_name, cookie_value in cookies:
-            ans += f"Set-Cookie: {cookie_name}={cookie_value}\r\n"
-        ans += "\r\n"
-        return ans
+from templates.utils import http_ok_header
 
 def error_page(request_dict, function_url_list):
     list = ""

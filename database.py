@@ -1,3 +1,4 @@
+import random
 import sqlite3
 import datetime
 
@@ -38,6 +39,7 @@ class Database:
                         )""")
 
             self.cursor.execute("""CREATE TABLE tokens (
+                            token_id TEXT,
                             username TEXT,
                             time BLOB
                         )""")
@@ -97,10 +99,11 @@ class Database:
         self.cursor.execute("SELECT * FROM users WHERE username=:username", {'username': username})
         founds = self.cursor.fetchall()
         if founds:
-            assert len(founds) == 1
+            assert len(founds) >= 1
             user = founds[0]
             user_dict = {"username": user[0], "password": user[1], "type": user[2], "striked": user[3],
                          "approved": user[4]}
+            return user_dict
         else:
             return None
 
@@ -235,12 +238,13 @@ class Database:
         if 'time' not in user_dict.keys():
             user_dict['time'] = datetime.datetime.now()
         with self.conn:
+            token_id=random.choice()
             columns = ', '.join(user_dict.keys())
             placeholders = ':' + ', :'.join(user_dict.keys())
             query = 'INSERT INTO tokens (%s) VALUES (%s)' % (columns, placeholders)
             # print(query)
             self.cursor.execute(query, user_dict)
-        return self.cursor.lastrowid
+        return token_id
 
     def delete_token(self, token_id):
         with self.conn:
@@ -255,6 +259,7 @@ class Database:
                                 {'token_id': token_id, 'time': dt})
 
     def get_token_by_id(self, token_id):
+        print(token_id)
         self.cursor.execute("""SELECT rowid, * FROM tokens
                                                WHERE token_id=:token_id""",
                             {'token_id': token_id})
@@ -262,7 +267,7 @@ class Database:
         if founds:
             assert len(founds) == 1
             token = founds[0]
-            token_dict = {'token_id': token[0], 'username': token[1], 'time': token[2]}
+            token_dict = {'token_id': token[1], 'username': token[2], 'time': token[3]}
             return token_dict
         else:
             return None

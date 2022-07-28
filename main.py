@@ -1,14 +1,22 @@
+import os
 import random
 import socket
+from templates.utils import http_ok_header
 from templates.login.view import login, login_helper, login_action
 from templates.signin.view import signin, signin_helper
 from templates.client_home.view import client_home
 from templates.error.view import error_page, error_file
+from templates.Home.view import func_home
 from templates.favicon.view import favicon
 from database import Database
 
 HOST = "127.0.0.2"  # Standard loopback interface address (localhost)
 PORT = 8081  # Port to listen on (non-privileged ports are > 1023)
+global database
+
+
+def get_database():
+    return database
 
 
 def to_request_dict(data):
@@ -23,17 +31,6 @@ def to_request_dict(data):
             cookies_dict[cookie.split("=")[0]] = cookie.split("=")[1]
         request_dict["Cookie"] = cookies_dict
     return request_dict
-
-
-def http_ok_header(cookies=None):
-    if cookies is None:
-        return "HTTP/1.1 200 OK\r\n\r\n"
-    else:
-        ans = f"HTTP/1.1 200 OK\r\n"
-        for cookie_name, cookie_value in cookies:
-            ans += f"Set-Cookie: {cookie_name}={cookie_value}\r\n"
-        ans += "\r\n"
-        return ans
 
 
 def get_parameters(url, split_url):
@@ -107,11 +104,13 @@ def start_listening(HOST, PORT, function_url_list):
 
 
 if __name__ == "__main__":
+    global database
     database = Database()
     database.first_time_setup()
     print("open site by: ", "http://" + str(HOST) + ":" + str(PORT) + "/login")
     start_listening(HOST, PORT,
                     [(client_home, "/home/<id>"), (favicon, "/favicon.ico")
                         , (login, "/login"), (login_helper, "/templates/login/<+>"), (login_action, "/<login?email=+>"),
-                     (signin, "/signin"), (signin_helper, "/templates/signin/<+>"),
+                     (signin, "/signinuser"), (signin_helper, "/templates/signin/<+>"), (signin, "/signinadmin"),
+                     (func_home, "/home")
                      ])

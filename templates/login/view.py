@@ -1,16 +1,7 @@
 from ..utils import get_file_packet
-
-
-def http_ok_header(cookies=None):
-    if cookies is None:
-        return "HTTP/1.1 200 OK\r\n\r\n"
-    else:
-        ans = f"HTTP/1.1 200 OK\r\n"
-        for cookie_name, cookie_value in cookies:
-            ans += f"Set-Cookie: {cookie_name}={cookie_value}\r\n"
-        ans += "\r\n"
-        return ans
-
+from database import Database
+from ..client_home.view import client_home
+from templates.utils import http_ok_header
 
 def login(request_dict):
     with open("templates/login/index.html", "r", encoding="utf-8") as index:
@@ -28,4 +19,22 @@ def login_action(request_dict, rest):
     pass_end = url.find("pass=") + 5
     email = url[email_end:pass_end - 6]
     pass_word = url[pass_end:]
-    print(email, pass_word)
+    d = Database()
+    user = d.get_account_by_username(email)
+    print(user)
+    try:
+        if user['password'] == pass_word:
+            token = d.get_a_new_token_for_user({"username": user["username"]})
+            request_dict["token"] = token
+
+            new_cookies = [("token", request_dict["token"])]
+            return http_ok_header(
+                new_cookies) + f'''
+                <html> <head> <meta http-equiv="refresh" content="0; url=/home" /> <body>  </body> </head> </html>
+                '''
+    except:
+        pass
+    request_dict["status"] = "wrong username/password"
+    return http_ok_header() + f'''
+                       <html> <head> <meta http-equiv="refresh" content="0; url=/login" /> <body>  </body> </head> </html>
+                       '''
