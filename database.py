@@ -1,6 +1,7 @@
 import random
 import sqlite3
 import datetime
+import string
 
 DATABASE_NAME = 'Youtube.db'
 MANAGER = {'username': 'manager', 'password': 'supreme_manager#2022', 'type': 'manager',
@@ -127,6 +128,17 @@ class Database:
             users.append(user_dict)
         return users
 
+    def get_all_pending_admin(self):
+        self.cursor.execute("SELECT * FROM users WHERE type=:type AND approved=:approved",
+                            {'type': 'admin', "approved": 0})
+        founds = self.cursor.fetchall()
+        users = []
+        for user in founds:
+            user_dict = {"username": user[0], "password": user[1], "type": user[2], "striked": user[3],
+                         "approved": user[4]}
+            users.append(user_dict)
+        return users
+
     def delete_user(self, username):
         with self.conn:
             self.cursor.execute("""DELETE FROM users WHERE username=:username""",
@@ -238,7 +250,9 @@ class Database:
         if 'time' not in user_dict.keys():
             user_dict['time'] = datetime.datetime.now()
         with self.conn:
-            token_id=random.choice()
+            token_id = ''.join(
+                random.choice(string.digits + string.ascii_uppercase + string.ascii_lowercase) for i in range(10))
+            user_dict["token_id"] = token_id
             columns = ', '.join(user_dict.keys())
             placeholders = ':' + ', :'.join(user_dict.keys())
             query = 'INSERT INTO tokens (%s) VALUES (%s)' % (columns, placeholders)
@@ -259,7 +273,6 @@ class Database:
                                 {'token_id': token_id, 'time': dt})
 
     def get_token_by_id(self, token_id):
-        print(token_id)
         self.cursor.execute("""SELECT rowid, * FROM tokens
                                                WHERE token_id=:token_id""",
                             {'token_id': token_id})
