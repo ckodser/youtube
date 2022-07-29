@@ -54,12 +54,17 @@ class Database:
                         )""")
 
             self.cursor.execute("""CREATE TABLE tickets (
-                            ticket_id TEXT,
+                            conv_id TEXT,
                             time BLOB,
                             username TEXT,
-                            type TEXT,
-                            status TEXT,
                             message TEXT
+                        )""")
+
+            self.cursor.execute("""CREATE TABLE conversations (
+                            conv_id TEXT,
+                            sender TEXT,
+                            receiver TEXT,
+                            status TEXT
                         )""")
 
             self.cursor.execute("INSERT INTO users VALUES (:username, :password, :type, :striked, :approved)",
@@ -297,49 +302,73 @@ class Database:
         else:
             return None
 
-    ### Ticket methods
-    def insert_ticket(self, ticket_dict):
-        if 'time' not in ticket_dict.keys():
-            ticket_dict['time'] = datetime.datetime.now()
-        if "status" not in ticket_dict.keys():
-            ticket_dict['status'] = "new"
-        with self.conn:
-            ticket_id = ''.join(
+    ### Ticket and Conversation methods
+
+    def insert_conv(self, conv_dict):
+        if 'conv_id' not in conv_dict.keys():
+            conv_dict['conv_id'] = ''.join(
                 random.choice(string.digits + string.ascii_uppercase + string.ascii_lowercase) for i in range(10))
-            ticket_dict["ticket_id"] = ticket_id
-            columns = ', '.join(ticket_dict.keys())
-            placeholders = ':' + ', :'.join(ticket_dict.keys())
-            query = 'INSERT INTO tickets (%s) VALUES (%s)' % (columns, placeholders)
-            # print(query)
-            self.cursor.execute(query, ticket_dict)
-        return ticket_id
+        if 'receiver' not in conv_dict.keys():
+            conv_dict['receiver'] = ''
+        if 'status' not in conv_dict.keys():
+            conv_dict['status'] = 'new'
+        assert 'sender' in conv_dict.keys()
 
-    def delete_ticket(self, ticket_id):
         with self.conn:
-            self.cursor.execute("""DELETE FROM tickets WHERE ticket_id=:ticket_id""",
-                                {'ticket_id': ticket_id})
+            columns = ', '.join(conv_dict.keys())
+            placeholders = ':' + ', :'.join(conv_dict.keys())
+            query = 'INSERT INTO conversations (%s) VALUES (%s)' % (columns, placeholders)
+            self.cursor.execute(query, conv_dict)
 
-    def get_tickets_by_username(self, username):
+        return conv_dict['conv_id']
+
+    def update_conv_status(self, conv_id, status):
+        if status in ["new", "waiting", "solved", "closed"]:
+            with self.conn:
+                self.cursor.execute("""UPDATE conversations SET status=:status WHERE conv_id=:conv_id""",
+                                    {'conv_id': conv_id, 'status': status})
+        else:
+            raise Exception("Invalid ticket status!")
+
+    def update_conv_receiver(self, conv_id, receiver):
+        with self.conn:
+            self.cursor.execute("""UPDATE conversations SET receiver=:receiver WHERE conv_id=:conv_id""",
+                                {'conv_id': conv_id, 'receiver': receiver})
+
+    def get_conv_by_id(self, conv_id):
+        self.cursor.execute("""SELECT * FROM conversations
+                                               WHERE conv_id=:conv_id""",
+                            {'conv_id': conv_id})
+        founds = self.cursor.fetchall()
+        if founds:
+            assert len(founds) == 1
+            conv = founds[0]
+            conv_dict = {'conv_id': conv[0], 'sender': conv[1], 'receiver': conv[2], 'status': conv[3]}
+            return conv_dict
+        else:
+            return None
+
+    def get_tickets_by_conv(self, conv_id):
         self.cursor.execute("""SELECT * FROM tickets
-                                       WHERE username=:username""",
-                            {'username': username})
+                                               WHERE conv_id=:conv_id""",
+                            {'conv_id': conv_id})
         founds = self.cursor.fetchall()
         tickets = []
         for ticket in founds:
-            ticket_dict = {"ticket_id": ticket[0],
-                           "time": ticket[1],
-                           "username": ticket[2],
-                           "type": ticket[3],
-                           "status": ticket[4],
-                           "message": ticket[5]}
+            ticket_dict = {'conv_id': ticket[0], 'date': ticket[1], 'username': ticket[2], 'message': ticket[3]}
             tickets.append(ticket_dict)
         return tickets
 
-    def update_ticket_status(self, ticket_id, status):
-        if status in ["new", "waiting", "solved", "closed"]:
-            with self.conn:
-                self.cursor.execute("""UPDATE tokens SET status=:status
-                                                   WHERE ticket_id=:ticket_id""",
-                                    {'ticket_id': ticket_id, 'status': status})
-        else:
-            raise Exception("Invalid ticket status!")
+    def insert_ticket(self, ticket_dict):
+        if 'date' not in ticket_dict.keys():
+            ticket_dict['date'] = datetime.datetime.now()
+
+        assert 'conv_id' in ticket_dict.keys()
+        assert 'username' in ticket_dict.keys()
+        assert 'message' in ticket_dict.keys()
+
+        with self.conn:
+            columns = ', '.join(ticket_dict.keys())
+            placeholders = ':' + ', :'.join(ticket_dict.keys())
+            query = 'INSERT INTO tickets (%s) VALUES (%s)' % (columns, placeholders)
+            self.cursor.execute(query, ticket_dict)
