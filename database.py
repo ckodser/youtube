@@ -292,7 +292,7 @@ class Database:
         if founds:
             assert len(founds) == 1
             token = founds[0]
-            token_dict = {'token_id': token[1], 'username': token[2], 'time': token[3]}
+            token_dict = {'token_id': token[0], 'username': token[1], 'time': token[2]}
             return token_dict
         else:
             return None
@@ -307,7 +307,7 @@ class Database:
             ticket_id = ''.join(
                 random.choice(string.digits + string.ascii_uppercase + string.ascii_lowercase) for i in range(10))
             ticket_dict["ticket_id"] = ticket_id
-            columns = ', '.join(user_dict.keys())
+            columns = ', '.join(ticket_dict.keys())
             placeholders = ':' + ', :'.join(ticket_dict.keys())
             query = 'INSERT INTO tickets (%s) VALUES (%s)' % (columns, placeholders)
             # print(query)
@@ -327,11 +327,11 @@ class Database:
         tickets = []
         for ticket in founds:
             ticket_dict = {"ticket_id": ticket[0],
-                            "time": ticket[1],
-                            "username": ticket[2],
-                            "type": ticket[3],
-                            "status": ticket[4],
-                            "message": ticket[5]}
+                           "time": ticket[1],
+                           "username": ticket[2],
+                           "type": ticket[3],
+                           "status": ticket[4],
+                           "message": ticket[5]}
             tickets.append(ticket_dict)
         return tickets
 
