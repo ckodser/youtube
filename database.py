@@ -54,6 +54,7 @@ class Database:
                         )""")
 
             self.cursor.execute("""CREATE TABLE tickets (
+                            ticket_id TEXT,
                             time BLOB,
                             username TEXT,
                             type TEXT,
@@ -273,7 +274,7 @@ class Database:
 
     def delete_token(self, token_id):
         with self.conn:
-            self.cursor.execute("""DELETE FROM tokens WHERE rowid=:token_id""",
+            self.cursor.execute("""DELETE FROM tokens WHERE token_id=:token_id""",
                                 {'token_id': token_id})
 
     def update_token_time(self, token_id):
@@ -284,7 +285,7 @@ class Database:
                                 {'token_id': token_id, 'time': dt})
 
     def get_token_by_id(self, token_id):
-        self.cursor.execute("""SELECT rowid, * FROM tokens
+        self.cursor.execute("""SELECT * FROM tokens
                                                WHERE token_id=:token_id""",
                             {'token_id': token_id})
         founds = self.cursor.fetchall()
@@ -295,3 +296,50 @@ class Database:
             return token_dict
         else:
             return None
+
+    ### Ticket methods
+    def insert_ticket(self, ticket_dict):
+        if 'time' not in ticket_dict.keys():
+            ticket_dict['time'] = datetime.datetime.now()
+        if "status" not in ticket_dict.keys():
+            ticket_dict['status'] = "new"
+        with self.conn:
+            ticket_id = ''.join(
+                random.choice(string.digits + string.ascii_uppercase + string.ascii_lowercase) for i in range(10))
+            ticket_dict["ticket_id"] = ticket_id
+            columns = ', '.join(user_dict.keys())
+            placeholders = ':' + ', :'.join(ticket_dict.keys())
+            query = 'INSERT INTO tickets (%s) VALUES (%s)' % (columns, placeholders)
+            # print(query)
+            self.cursor.execute(query, ticket_dict)
+        return ticket_id
+
+    def delete_ticket(self, ticket_id):
+        with self.conn:
+            self.cursor.execute("""DELETE FROM tickets WHERE ticket_id=:ticket_id""",
+                                {'ticket_id': ticket_id})
+
+    def get_tickets_by_username(self, username):
+        self.cursor.execute("""SELECT * FROM tickets
+                                       WHERE username=:username""",
+                            {'username': username})
+        founds = self.cursor.fetchall()
+        tickets = []
+        for ticket in founds:
+            ticket_dict = {"ticket_id": ticket[0],
+                            "time": ticket[1],
+                            "username": ticket[2],
+                            "type": ticket[3],
+                            "status": ticket[4],
+                            "message": ticket[5]}
+            tickets.append(ticket_dict)
+        return tickets
+
+    def update_ticket_status(self, ticket_id, status):
+        if status in ["new", "waiting", "solved", "closed"]:
+            with self.conn:
+                self.cursor.execute("""UPDATE tokens SET status=:status
+                                                   WHERE ticket_id=:ticket_id""",
+                                    {'ticket_id': ticket_id, 'status': status})
+        else:
+            raise Exception("Invalid ticket status!")
