@@ -111,6 +111,7 @@ if __name__ == "__main__":
         database.first_time_setup()
     except:
         pass
+    database.insert_video(video_dict={"address": "1.mp4", "name": "rain"})
     print("open site by: ", "http://" + str(HOST) + ":" + str(PORT) + "/login")
     start_listening(HOST, PORT,
                     [
