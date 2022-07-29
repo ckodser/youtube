@@ -1,5 +1,5 @@
 from database import Database
-from templates.utils import http_ok_header
+from templates.utils import http_ok_header, get_account
 from templates.error.view import error_page
 
 
@@ -33,7 +33,12 @@ def admin_home(request_dict, user_name, user_info):
             </body>             
             </head> </html>
                         '''
+
+
 def approved(request_dict, username):
+    user_info = get_account(request_dict)
+    if user_info is None or user_info["type"] != "manager":
+        return error_page(request_dict, [])
     d = Database()
     d.approve_admin(username)
     return http_ok_header() + f'''
@@ -42,19 +47,24 @@ def approved(request_dict, username):
 
 
 def unstriked(request_dict, username):
+    user_info = get_account(request_dict)
+    if user_info is None or user_info["type"] != "manager":
+        return error_page(request_dict, [])
+
     d = Database()
     d.change_strike_status_of_user(username, 0)
     return http_ok_header() + f'''
                     <html> <head> <meta http-equiv="refresh" content="0; url=/home" /> <body>  </body> </head> </html>
                     '''
 
+
 def manager_home(request_dict):
     d = Database()
     list = ""
-    pend_admin=(d.get_all_pending_admin())
+    pend_admin = (d.get_all_pending_admin())
     for admin in pend_admin:
-        list+=f''' <li>  <a href=/approve/{admin["username"]}> approve {admin["username"]} </a> </li>\n'''
-    striked_users=(d.get_all_striked_users())
+        list += f''' <li>  <a href=/approve/{admin["username"]}> approve {admin["username"]} </a> </li>\n'''
+    striked_users = (d.get_all_striked_users())
     for user in striked_users:
         list += f''' <li>  <a href=/unstriked/{user["username"]}> unstriked {user["username"]} </a> </li>\n'''
 
@@ -72,21 +82,14 @@ def manager_home(request_dict):
 
 
 def func_home(request_dict):
-    print("REQUEST DICT FUNC HOME", request_dict)
-    try:
-        token_id = request_dict["Cookie"]["token"]
-    except:
+    user_info = get_account(request_dict)
+    if user_info is None:
         return error_page(request_dict, [])
-
-    d = Database()
-    user_name = d.get_token_by_id(token_id)["username"]
-    print("USERNAME FUNC HOME", user_name)
-    user_info = d.get_account_by_username(user_name)
     print("USERINFO FUNC HOME", user_info)
     user_type = user_info["type"]
     if user_type == "admin":
-        return admin_home(request_dict, user_name, user_info)
+        return admin_home(request_dict, user_info["username"], user_info)
     elif user_type == "user":
-        return user_home(request_dict, user_name, user_info)
+        return user_home(request_dict, user_info["username"], user_info)
     elif user_type == "manager":
         return manager_home(request_dict)

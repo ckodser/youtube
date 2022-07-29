@@ -1,3 +1,16 @@
+from database import Database
+
+
+def get_account(request_dict):
+    try:
+        d = Database()
+        token_id = request_dict["Cookie"]["token"]
+        user_name = d.get_token_by_id(token_id)["username"]
+        user_info = d.get_account_by_username(user_name)
+        return user_info
+    except:
+        return None
+
 def http_ok_header(cookies=None):
     if cookies is None:
         return "HTTP/1.1 200 OK\r\n\r\n"
