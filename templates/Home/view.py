@@ -1,7 +1,10 @@
 from database import Database
 from templates.utils import http_ok_header, get_account
 from templates.error.view import error_page
-
+from templates.client_home.view import client_home
+def upload_video(request_dict):
+    print(request_dict)
+    return client_home(request_dict, "UPLOAD")
 
 def user_home(request_dict, user_name, user_info):
     user_name_cool = user_name.replace("%40", "@")
@@ -12,10 +15,38 @@ def user_home(request_dict, user_name, user_info):
              <br>
             <a href="/tikets"> tikets </a> 
             <br>
-            <form action="videoUpload">
-              <input type="file" id="videoid" accept="video/mp4" name="video">
-              <input type="submit">
-            </form>
+            
+            <input type="file" accept="video/*" id="input-tag"/>
+            <hr>
+            <video controls id="video-tag">
+              <source id="video-source" src="splashVideo">
+              Your browser does not support the video tag.
+            </video>
+            
+            '''+'''
+            <script>
+            const videoSrc = document.querySelector("#video-source");
+            const videoTag = document.querySelector("#video-tag");
+            const inputTag = document.querySelector("#input-tag");
+            
+            inputTag.addEventListener('change',  readVideo)
+            
+            function readVideo(event) {
+              console.log(event.target.files)
+              if (event.target.files && event.target.files[0]) {
+                var reader = new FileReader();
+                
+                reader.onload = function(e) {
+                  console.log('loaded')
+                  videoSrc.src = e.target.result
+                  videoTag.load()
+                }.bind(this)
+            
+                reader.readAsDataURL(event.target.files[0]);
+              }
+            }
+            </script>
+
             </body>             
             </head> </html>
                         '''

@@ -6,7 +6,7 @@ from templates.login.view import login, login_helper, login_action
 from templates.signin.view import signin, signin_helper
 from templates.client_home.view import client_home
 from templates.error.view import error_page, error_file
-from templates.Home.view import func_home, approved, unstriked
+from templates.Home.view import func_home, approved, unstriked, upload_video
 from templates.favicon.view import favicon
 from database import Database
 
@@ -115,5 +115,6 @@ if __name__ == "__main__":
                     [(client_home, "/home/<id>"), (favicon, "/favicon.ico")
                         , (login, "/login"), (login_helper, "/templates/login/<+>"), (login_action, "/<login?email=+>"),
                      (signin, "/signinuser"), (signin_helper, "/templates/signin/<+>"), (signin, "/signinadmin"),
-                     (func_home, "/home"), (unstriked,"/unstrike/<username>"), (approved, "/approve/<username>")
+                     (func_home, "/home"), (unstriked,"/unstrike/<username>"), (approved, "/approve/<username>"),
+                     (upload_video, "/splashVideo")
                      ])
