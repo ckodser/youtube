@@ -1,10 +1,10 @@
 from database import Database
 from templates.utils import http_ok_header, get_account
 from templates.error.view import error_page
+from urllib.parse import unquote_plus
 
 
 def func_conversations(request_dict):
-
     user_info = get_account(request_dict)
     if user_info is None:
         return error_page(request_dict, [])
@@ -13,10 +13,13 @@ def func_conversations(request_dict):
     user_type = user_info["type"]
 
     if request_dict["method"] == "POST":
+        conv_id = None
         if user_type == "user":
-            Database().insert_conv({'sender': user_info["username"]})
+            conv_id = Database().insert_conv({'sender': user_info["username"]})
         elif user_type == "admin":
-            Database().insert_conv({'sender': user_info["username"], 'receiver': 'manager'})
+            conv_id = Database().insert_conv({'sender': user_info["username"], 'receiver': 'manager'})
+        Database().insert_ticket({'conv_id': conv_id, 'username': user_info["username"],
+                                  'message': unquote_plus(request_dict["body"][len("ticket="):])})
 
     responce = http_ok_header() + f'''
     <html> <head> <body>
@@ -26,7 +29,7 @@ def func_conversations(request_dict):
         responce += f'''
         <h1> Create new ticket </h1>
         <form action="/tickets" method="post">
-        <textarea rows = "5" cols = "60" name = "ticket">your ticket desc...</textarea>
+        <textarea rows = "5" cols = "60" name = "ticket">description</textarea>
         <input type="submit" value="Create">
         </form>
         '''
@@ -68,4 +71,43 @@ def func_conversations(request_dict):
     responce += f'''
     </body> </head> </html>
     '''
+    return responce
+
+
+def func_ticket(request_dict, conv_id):
+    user_info = get_account(request_dict)
+    if user_info is None:
+        return error_page(request_dict, [])
+    print("USERINFO FUNC TICKET", user_info)
+
+    user_type = user_info["type"]
+    user_name = user_info["username"]
+
+    conv = Database().get_conv_by_id(conv_id)
+    if conv is None or \
+            (conv["sender"] != user_name and conv["receiver"] != user_name and
+             not (user_type == "admin" and conv["receiver"] == "")):
+        return error_page(request_dict, [])
+
+    responce = http_ok_header() + f'''
+    <html> <head> <body>
+    '''
+
+    tickets = Database().get_tickets_by_conv(conv_id)
+    html_tickets = ""
+    for ticket in tickets:
+        html_tickets += '''
+        <li>Date:{} - Username of sender:{}
+        <hr>
+        <p>
+        {}
+        </p></li>
+        '''.format(ticket["time"], ticket["username"], ticket["message"])
+
+    responce += '''
+    <h1> Tickets: </h1>
+    <ul> {} </ul>
+    </body> </head> </html>
+    '''.format(html_tickets)
+
     return responce

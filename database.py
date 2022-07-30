@@ -381,13 +381,13 @@ class Database:
         founds = self.cursor.fetchall()
         tickets = []
         for ticket in founds:
-            ticket_dict = {'conv_id': ticket[0], 'date': ticket[1], 'username': ticket[2], 'message': ticket[3]}
+            ticket_dict = {'conv_id': ticket[0], 'time': ticket[1], 'username': ticket[2], 'message': ticket[3]}
             tickets.append(ticket_dict)
         return tickets
 
     def insert_ticket(self, ticket_dict):
-        if 'date' not in ticket_dict.keys():
-            ticket_dict['date'] = datetime.datetime.now()
+        if 'time' not in ticket_dict.keys():
+            ticket_dict['time'] = datetime.datetime.now()
 
         assert 'conv_id' in ticket_dict.keys()
         assert 'username' in ticket_dict.keys()

@@ -10,7 +10,7 @@ from templates.error.view import error_page, error_file
 from templates.Home.view import func_home, approved, unstriked, upload_video
 from templates.favicon.view import favicon
 from templates.video.view import all_videos
-from templates.convs_and_tickets.view import func_conversations
+from templates.convs_and_tickets.view import func_conversations, func_ticket
 from database import Database
 from html import unescape
 
@@ -144,13 +144,10 @@ def start_listening(HOST, PORT, function_url_list):
                     if answer.__class__ == str:
                         answer = answer.encode()
                     conn.sendall(answer)
-            except Exception as e:
-                print(e)
-            finally:
+            except KeyboardInterrupt:
                 if conn is not None:
                     conn.close()
                 break
-        s.close()
     print("Server stopped, Good Bye!")
 
 
@@ -179,4 +176,5 @@ if __name__ == "__main__":
                         (upload_video, "/video_upload"),
                         (all_videos, "/videos"),
                         (func_conversations, "/tickets"),
+                        (func_ticket, "/conversation/<conv_id>")
                     ])
