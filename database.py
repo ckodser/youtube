@@ -64,7 +64,8 @@ class Database:
                             conv_id TEXT,
                             sender TEXT,
                             receiver TEXT,
-                            status TEXT
+                            status TEXT,
+                            time BLOB
                         )""")
 
             self.cursor.execute("INSERT INTO users VALUES (:username, :password, :type, :striked, :approved)",
@@ -311,7 +312,9 @@ class Database:
         if 'receiver' not in conv_dict.keys():
             conv_dict['receiver'] = ''
         if 'status' not in conv_dict.keys():
-            conv_dict['status'] = 'new'
+            conv_dict['status'] = 'waiting'
+        if 'time' not in conv_dict.keys():
+            conv_dict['time'] = datetime.datetime.now()
         assert 'sender' in conv_dict.keys()
 
         with self.conn:
@@ -343,10 +346,32 @@ class Database:
         if founds:
             assert len(founds) == 1
             conv = founds[0]
-            conv_dict = {'conv_id': conv[0], 'sender': conv[1], 'receiver': conv[2], 'status': conv[3]}
+            conv_dict = {'conv_id': conv[0], 'sender': conv[1], 'receiver': conv[2], 'status': conv[3], 'time': conv[4]}
             return conv_dict
         else:
             return None
+
+    def get_all_convs_by_sender(self, sender):
+        self.cursor.execute("""SELECT * FROM conversations
+                                               WHERE sender=:sender""",
+                            {'sender': sender})
+        founds = self.cursor.fetchall()
+        convs = []
+        for conv in founds:
+            conv_dict = {'conv_id': conv[0], 'sender': conv[1], 'receiver': conv[2], 'status': conv[3], 'time': conv[4]}
+            convs.append(conv_dict)
+        return convs
+
+    def get_all_convs_by_receiver(self, receiver):
+        self.cursor.execute("""SELECT * FROM conversations
+                                               WHERE receiver=:receiver""",
+                            {'receiver': receiver})
+        founds = self.cursor.fetchall()
+        convs = []
+        for conv in founds:
+            conv_dict = {'conv_id': conv[0], 'sender': conv[1], 'receiver': conv[2], 'status': conv[3], 'time': conv[4]}
+            convs.append(conv_dict)
+        return convs
 
     def get_tickets_by_conv(self, conv_id):
         self.cursor.execute("""SELECT * FROM tickets
