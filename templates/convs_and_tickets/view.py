@@ -4,6 +4,7 @@ from templates.error.view import error_page
 
 
 def func_conversations(request_dict):
+
     user_info = get_account(request_dict)
     if user_info is None:
         return error_page(request_dict, [])
@@ -11,13 +12,23 @@ def func_conversations(request_dict):
 
     user_type = user_info["type"]
 
+    if request_dict["method"] == "POST":
+        if user_type == "user":
+            Database().insert_conv({'sender': user_info["username"]})
+        elif user_type == "admin":
+            Database().insert_conv({'sender': user_info["username"], 'receiver': 'manager'})
+
     responce = http_ok_header() + f'''
     <html> <head> <body>
     '''
 
     if user_type != "manager":
         responce += f'''
-        <h1> Create new ticket (kargaran mashghule kar hastand) </h1>
+        <h1> Create new ticket </h1>
+        <form action="/tickets" method="post">
+        <textarea rows = "5" cols = "60" name = "ticket">your ticket desc...</textarea>
+        <input type="submit" value="Create">
+        </form>
         '''
         opened_conversations = Database().get_all_convs_by_sender(user_info["username"])
         html_created_conversations = ""
@@ -54,4 +65,7 @@ def func_conversations(request_dict):
         <ul> {} </ul>
         '''.format(html_open_conversations)
 
+    responce += f'''
+    </body> </head> </html>
+    '''
     return responce
