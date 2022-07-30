@@ -15,7 +15,7 @@ from database import Database
 from html import unescape
 
 HOST = "127.0.0.2"  # Standard loopback interface address (localhost)
-PORT = random.randint(2000, 10000)  # Port to listen on (non-privileged ports are > 1023)
+PORT = 8080  # Port to listen on (non-privileged ports are > 1023)
 global database
 
 
@@ -77,69 +77,81 @@ def is_match(url, split_url):
 
 def start_listening(HOST, PORT, function_url_list):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         s.bind((HOST, PORT))
         while True:
             s.listen()
-            conn, addr = s.accept()
-            with conn:
-                data = conn.recv(50000000)
-                form_parts = []
-                if not "multipart/form-data".encode() in data:
-                    data = data.decode()
-                else:
-                    content_length_start = data.find("Content-Length".encode()) + 16
-                    content_length_length = data[content_length_start:].find("\r\n".encode())
-                    content_length = data[content_length_start:content_length_start + content_length_length].decode()
-                    content_length = int(content_length)
-                    while len(data) < content_length:
-                        data += conn.recv(50000000)
-                    header_end = data.find("\r\n\r\n".encode())
-                    header = data[:header_end].decode()
-                    rest = data[header_end + 4:]
+            conn = None
+            try:
+                conn, addr = s.accept()
+                with conn:
+                    data = conn.recv(50000000)
+                    form_parts = []
+                    if not "multipart/form-data".encode() in data:
+                        data = data.decode()
+                    else:
+                        content_length_start = data.find("Content-Length".encode()) + 16
+                        content_length_length = data[content_length_start:].find("\r\n".encode())
+                        content_length = data[
+                                         content_length_start:content_length_start + content_length_length].decode()
+                        content_length = int(content_length)
+                        while len(data) < content_length:
+                            data += conn.recv(50000000)
+                        header_end = data.find("\r\n\r\n".encode())
+                        header = data[:header_end].decode()
+                        rest = data[header_end + 4:]
 
-                    while len(rest) > 0:
-                        header_end = rest.find("\r\n\r\n".encode())
-                        form_header = rest[:header_end].decode().split("\n")[1:]
-                        rest = rest[header_end + 4:]
-                        if rest.find("\r\nContent-Disposition: form-data; name=".encode()) != -1:
-                            end_data=rest.find("\r\nContent-Disposition: form-data; name=".encode())
-                            form_data = rest[:end_data]
-                            rest = rest[end_data+2:]
-                        else:
+                        while len(rest) > 0:
+                            header_end = rest.find("\r\n\r\n".encode())
+                            form_header = rest[:header_end].decode().split("\n")[1:]
+                            rest = rest[header_end + 4:]
+                            if rest.find("\r\nContent-Disposition: form-data; name=".encode()) != -1:
+                                end_data = rest.find("\r\nContent-Disposition: form-data; name=".encode())
+                                form_data = rest[:end_data]
+                                rest = rest[end_data + 2:]
+                            else:
+                                break
+                            form_parts.append((form_header, form_data))
+                        data = header
+
+                    if len(data) == 0:
+                        continue
+                    split_data = data.split()
+                    request_dict = to_request_dict(data.split("\n")[1:])
+                    method = split_data[0]
+                    url = split_data[1]
+                    request_dict["method"] = method
+                    request_dict["url"] = url
+                    request_dict["body"] = data[data.find("\r\n\r\n") + 4:]
+                    request_dict["form_parts"] = form_parts
+
+                    split_url = url.lstrip("/").split("/")
+                    answer = 404
+                    for function, url in function_url_list:
+                        if is_match(url, split_url):
+                            parameters = get_parameters(url, split_url)
+                            parameters["request_dict"] = request_dict
+                            answer = function(**parameters)
                             break
-                        form_parts.append((form_header, form_data))
-                    data=header
-
-                if len(data) == 0:
-                    continue
-                split_data = data.split()
-                request_dict = to_request_dict(data.split("\n")[1:])
-                method = split_data[0]
-                url = split_data[1]
-                request_dict["method"] = method
-                request_dict["url"] = url
-                request_dict["body"] = data[data.find("\r\n\r\n") + 4:]
-                request_dict["form_parts"] = form_parts
-
-                split_url = url.lstrip("/").split("/")
-                answer = 404
-                for function, url in function_url_list:
-                    if is_match(url, split_url):
-                        parameters = get_parameters(url, split_url)
-                        parameters["request_dict"] = request_dict
-                        answer = function(**parameters)
-                        break
-                if answer is None:
+                    if answer is None:
+                        conn.close()
+                        continue
+                    if answer == 404:
+                        print(f"Connected by {addr}")
+                        print(method, url, request_dict)
+                        print("ERROR")
+                        answer = error_page(request_dict, function_url_list)
+                    if answer.__class__ == str:
+                        answer = answer.encode()
+                    conn.sendall(answer)
+            except Exception as e:
+                print(e)
+            finally:
+                if conn is not None:
                     conn.close()
-                    continue
-                if answer == 404:
-                    print(f"Connected by {addr}")
-                    print(method, url, request_dict)
-                    print("ERROR")
-                    answer = error_page(request_dict, function_url_list)
-                if answer.__class__ == str:
-                    answer = answer.encode()
-                conn.sendall(answer)
+                break
+        s.close()
+    print("Server stopped, Good Bye!")
 
 
 if __name__ == "__main__":
