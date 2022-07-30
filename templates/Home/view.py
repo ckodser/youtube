@@ -4,6 +4,8 @@ from database import Database
 from templates.utils import http_ok_header, get_account
 from templates.error.view import error_page
 from templates.client_home.view import client_home
+import cv2
+
 
 
 def upload_video(request_dict):
@@ -14,10 +16,14 @@ def upload_video(request_dict):
     user_name = user_info["username"].replace("%40", "@")
     video_name = request_dict['form_parts'][0][1].decode().split("\r\n")[0]
     file_address = f'''videos/{user_name.replace('.', '').replace('@', '')}{random.randint(1, 100000000)}{video_name}'''
-    file_address += ".mp4"
-    with open(file_address, mode="wb") as f:
+    with open(file_address+".mp4", mode="wb") as f:
         f.write(request_dict['form_parts'][1][1])
         print(len(request_dict['form_parts'][1][1]))
+
+    vidcap = cv2.VideoCapture(file_address+".mp4")
+    success, image = vidcap.read()
+    if success:
+        cv2.imwrite(file_address+".jpg", image)  # save frame as JPEG file
 
     database = Database()
     database.insert_video(video_dict={"address": file_address, "name": video_name})
