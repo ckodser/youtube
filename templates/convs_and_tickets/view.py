@@ -1,7 +1,7 @@
 from database import Database
 from templates.utils import http_ok_header, get_account
 from templates.error.view import error_page
-from urllib.parse import unquote_plus
+from urllib.parse import unquote_plus, parse_qs
 
 
 def func_conversations(request_dict):
@@ -91,13 +91,67 @@ def func_ticket(request_dict, conv_id):
 
     responce = http_ok_header() + f'''
     <html> <head> <body>
+    <a href="/tickets"> Back to tickets list </a>
     '''
+
+    body_dict = parse_qs(request_dict["body"])
+
+    if 'takeTicket' in body_dict:
+        Database().update_conv_status(conv_id, "new")
+        Database().update_conv_receiver(conv_id, user_name)
+        responce += f'''
+        <h1> Ticket taken </h1>
+        '''
+
+    if 'statusClosed' in body_dict:
+        Database().update_conv_status(conv_id, "closed")
+        responce += f'''
+        <h1> Ticket closed </h1>
+        '''
+
+    if 'newMessage' in body_dict:
+        Database().insert_ticket({'conv_id': conv_id, 'username': user_name,
+                                  'message': unquote_plus(body_dict["ticket"][0])})
+        status = conv['status']
+        if user_name == conv["receiver"]:
+            status = 'solved'
+        if user_name == conv["sender"] and status != 'waiting':
+            status = 'new'
+        Database().update_conv_status(conv_id, status)
+        responce += f'''
+        <h1> New message added </h1>
+        '''
+
+    conv = Database().get_conv_by_id(conv_id)
+
+    if user_type == "admin" and conv['receiver'] == '':
+        responce += f'''
+        <form action="/conversation/{conv_id}" method="post"> <input type="submit" name="takeTicket" value="Take this ticket"> </form>
+        '''
+
+    if conv['receiver'] == user_name and conv['status'] != 'closed':
+        responce += f'''
+        <form action="/conversation/{conv_id}" method="post"> <input type="submit" name="statusClosed" value="Change status to Closed"> </form>
+        '''
+
+    if user_name in [conv['sender'], conv['receiver']] \
+            and conv['status'] != "closed":
+        responce += f'''
+        <h1>New message:</h1>
+        <form action="/conversation/{conv_id}" method="post">
+        <textarea rows = "5" cols = "60" name = "ticket">description</textarea>
+        <input type="submit" name="newMessage" value="Create">
+        </form>
+        '''
 
     tickets = Database().get_tickets_by_conv(conv_id)
     html_tickets = ""
     for ticket in tickets:
         html_tickets += '''
-        <li>Date:{} - Username of sender:{}
+        <li>
+        <hr>
+        <hr>
+        Date:{} - Username of sender:{}
         <hr>
         <p>
         {}
