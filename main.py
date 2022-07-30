@@ -10,6 +10,7 @@ from templates.error.view import error_page, error_file
 from templates.Home.view import func_home, approved, unstriked, upload_video
 from templates.favicon.view import favicon
 from templates.video.view import all_videos
+from templates.convs_and_tickets.view import func_conversations
 from database import Database
 from html import unescape
 
@@ -165,4 +166,5 @@ if __name__ == "__main__":
                         (approved, "/approve/<username>"),
                         (upload_video, "/video_upload"),
                         (all_videos, "/videos"),
+                        (func_conversations, "/tickets"),
                     ])

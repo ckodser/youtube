@@ -26,7 +26,7 @@ def func_conversations(request_dict):
             <li> <a href="/conversation/{}"> {} - Status: {} - Date created: {} </a></li>
             '''.format(conv["conv_id"], conv["conv_id"], conv["status"], conv["time"])
         responce += '''
-        <h2> Created tickets: </h2>
+        <h1> Created tickets: </h1>
         <ul> {} </ul>
         '''.format(html_created_conversations)
 
@@ -38,7 +38,7 @@ def func_conversations(request_dict):
             <li> <a href="/conversation/{}"> {} - Status: {} - Date created: {} </a></li>
             '''.format(conv["conv_id"], conv["conv_id"], conv["status"], conv["time"])
         responce += '''
-        <h3> History of tickets: </h3>
+        <h1> History of tickets: </h1>
         <ul> {} </ul>
         '''.format(html_answered_conversations)
 
@@ -50,7 +50,7 @@ def func_conversations(request_dict):
             <li> <a href="/conversation/{}"> {} - Status: {} - Date created: {} </a></li>
             '''.format(conv["conv_id"], conv["conv_id"], conv["status"], conv["time"])
         responce += '''
-        <h3> Open tickets: </h3>
+        <h1> Open tickets: </h1>
         <ul> {} </ul>
         '''.format(html_open_conversations)
 

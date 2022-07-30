@@ -7,7 +7,6 @@ from templates.client_home.view import client_home
 import cv2
 
 
-
 def upload_video(request_dict):
     user_info = get_account(request_dict)
     if user_info is None or user_info["type"] != "user" or user_info["striked"] == 1:
@@ -16,14 +15,14 @@ def upload_video(request_dict):
     user_name = user_info["username"].replace("%40", "@")
     video_name = request_dict['form_parts'][0][1].decode().split("\r\n")[0]
     file_address = f'''videos/{user_name.replace('.', '').replace('@', '')}{random.randint(1, 100000000)}{video_name}'''
-    with open(file_address+".mp4", mode="wb") as f:
+    with open(file_address + ".mp4", mode="wb") as f:
         f.write(request_dict['form_parts'][1][1])
         print(len(request_dict['form_parts'][1][1]))
 
-    vidcap = cv2.VideoCapture(file_address+".mp4")
+    vidcap = cv2.VideoCapture(file_address + ".mp4")
     success, image = vidcap.read()
     if success:
-        cv2.imwrite(file_address+".jpg", image)  # save frame as JPEG file
+        cv2.imwrite(file_address + ".jpg", image)  # save frame as JPEG file
 
     database = Database()
     database.insert_video(video_dict={"address": file_address, "name": video_name})
@@ -40,7 +39,7 @@ def user_home(request_dict, user_name, user_info):
             <br>
              <a href="/videos"> videos </a> 
              <br>
-            <a href="/tikets"> tikets </a> 
+            <a href="/tickets"> tickets </a> 
             <br>
                     <form method="post" enctype="multipart/form-data" action="/video_upload" >
                         <input type="text" name="videoName"/>
@@ -60,7 +59,7 @@ def admin_home(request_dict, user_name, user_info):
             <br>
              <a href="/videos"> videos </a> 
              <br>
-            <a href="/tikets"> tikets </a> 
+            <a href="/tickets"> tickets </a> 
             <br>
             </body>             
             </head> </html>
@@ -103,7 +102,7 @@ def manager_home(request_dict):
     return http_ok_header() + f'''
             <html> <head> <body> <h1> Hello BOSS</h1> 
             <br>
-            <a href="/tikets"> tikets </a> 
+            <a href="/tickets"> tickets </a> 
             <br>
             <ul>
             {list}
