@@ -1,3 +1,4 @@
+import copy
 import os
 import random
 import socket
@@ -10,6 +11,7 @@ from templates.Home.view import func_home, approved, unstriked, upload_video
 from templates.favicon.view import favicon
 from templates.video.view import all_videos
 from database import Database
+from html import unescape
 
 HOST = "127.0.0.2"  # Standard loopback interface address (localhost)
 PORT = random.randint(2000, 10000)  # Port to listen on (non-privileged ports are > 1023)
@@ -31,6 +33,15 @@ def to_request_dict(data):
         for cookie in cookies:
             cookies_dict[cookie.split("=")[0].lstrip().rstrip()] = cookie.split("=")[1].lstrip().rstrip()
         request_dict["Cookie"] = cookies_dict
+
+    if "Content-Disposition" in request_dict:
+        cookies = request_dict["Content-Disposition"].split(";")
+        cookies_dict = {}
+        for cookie in cookies:
+            if "=" in cookie:
+                cookies_dict[cookie.split("=")[0].lstrip().rstrip()] = cookie.split("=")[1].lstrip().rstrip().lstrip(
+                    '"').rstrip('"')
+        request_dict["Content-Disposition"] = cookies_dict
     return request_dict
 
 
@@ -70,19 +81,45 @@ def start_listening(HOST, PORT, function_url_list):
             s.listen()
             conn, addr = s.accept()
             with conn:
-                data = ""
-                while True:
-                    data = conn.recv(10240).decode()
-                    break
+                data = conn.recv(50000000)
+                form_parts = []
+                if not "multipart/form-data".encode() in data:
+                    data = data.decode()
+                else:
+                    content_length_start = data.find("Content-Length".encode()) + 16
+                    content_length_length = data[content_length_start:].find("\r\n".encode())
+                    content_length = data[content_length_start:content_length_start + content_length_length].decode()
+                    content_length = int(content_length)
+                    while len(data) < content_length:
+                        data += conn.recv(50000000)
+                    header_end = data.find("\r\n\r\n".encode())
+                    header = data[:header_end].decode()
+                    rest = data[header_end + 4:]
+
+                    while len(rest) > 0:
+                        header_end = rest.find("\r\n\r\n".encode())
+                        form_header = rest[:header_end].decode().split("\n")[1:]
+                        rest = rest[header_end + 4:]
+                        if rest.find("\r\nContent-Disposition: form-data; name=".encode()) != -1:
+                            end_data=rest.find("\r\nContent-Disposition: form-data; name=".encode())
+                            form_data = rest[:end_data]
+                            rest = rest[end_data+2:]
+                        else:
+                            break
+                        form_parts.append((form_header, form_data))
+                    data=header
+
                 if len(data) == 0:
                     continue
                 split_data = data.split()
+                request_dict = to_request_dict(data.split("\n")[1:])
                 method = split_data[0]
                 url = split_data[1]
-                request_dict = to_request_dict(data.split("\n")[1:])
                 request_dict["method"] = method
                 request_dict["url"] = url
                 request_dict["body"] = data[data.find("\r\n\r\n") + 4:]
+                request_dict["form_parts"] = form_parts
+
                 split_url = url.lstrip("/").split("/")
                 answer = 404
                 for function, url in function_url_list:
@@ -111,7 +148,8 @@ if __name__ == "__main__":
         database.first_time_setup()
     except:
         pass
-    print("open site by: ", "http://" + str(HOST) + ":" + str(PORT) + "/login")
+    # database.insert_video(video_dict={"address": "1.mp4", "name": "rain"})
+    print("open site by: ", "http://" + str(HOST) + ":" + str(PORT) + "/home")
     start_listening(HOST, PORT,
                     [
                         (client_home, "/home/<id>"),
@@ -125,6 +163,6 @@ if __name__ == "__main__":
                         (func_home, "/home"),
                         (unstriked, "/unstrike/<username>"),
                         (approved, "/approve/<username>"),
-                        (upload_video, "/splashVideo"),
+                        (upload_video, "/video_upload"),
                         (all_videos, "/videos"),
                     ])

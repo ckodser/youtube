@@ -72,6 +72,7 @@ class Database:
                                 (MANAGER['username'], MANAGER['password'], MANAGER['type'], MANAGER['striked'],
                                  MANAGER['approved']))
 
+
     ### Users' methods
 
     def insert_user(self, user_dict):
@@ -170,7 +171,7 @@ class Database:
 
     ### Videos' methods
 
-    def insert_videos(self, video_dict):
+    def insert_video(self, video_dict):
         if 'deleted' not in video_dict.keys():
             video_dict['deleted'] = 0
         if 'tag' not in video_dict.keys():

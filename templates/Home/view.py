@@ -1,10 +1,37 @@
+import random
+
 from database import Database
 from templates.utils import http_ok_header, get_account
 from templates.error.view import error_page
 from templates.client_home.view import client_home
+import cv2
+
+
+
 def upload_video(request_dict):
-    print(request_dict)
-    return client_home(request_dict, "UPLOAD")
+    user_info = get_account(request_dict)
+    if user_info is None or user_info["type"] != "user" or user_info["striked"] == 1:
+        request_dict["file_data"] = "FILE DATA REMOVED"
+        return error_page(request_dict)
+    user_name = user_info["username"].replace("%40", "@")
+    video_name = request_dict['form_parts'][0][1].decode().split("\r\n")[0]
+    file_address = f'''videos/{user_name.replace('.', '').replace('@', '')}{random.randint(1, 100000000)}{video_name}'''
+    with open(file_address+".mp4", mode="wb") as f:
+        f.write(request_dict['form_parts'][1][1])
+        print(len(request_dict['form_parts'][1][1]))
+
+    vidcap = cv2.VideoCapture(file_address+".mp4")
+    success, image = vidcap.read()
+    if success:
+        cv2.imwrite(file_address+".jpg", image)  # save frame as JPEG file
+
+    database = Database()
+    database.insert_video(video_dict={"address": file_address, "name": video_name})
+
+    return http_ok_header() + f'''
+                        <html> <head> <meta http-equiv="refresh" content="0; url=/videos" /> <body>  </body> </head> </html>
+                        '''
+
 
 def user_home(request_dict, user_name, user_info):
     user_name_cool = user_name.replace("%40", "@")
@@ -15,37 +42,11 @@ def user_home(request_dict, user_name, user_info):
              <br>
             <a href="/tikets"> tikets </a> 
             <br>
-            
-            <input type="file" accept="video/*" id="input-tag"/>
-            <hr>
-            <video controls id="video-tag">
-              <source id="video-source" src="splashVideo">
-              Your browser does not support the video tag.
-            </video>
-            
-            '''+'''
-            <script>
-            const videoSrc = document.querySelector("#video-source");
-            const videoTag = document.querySelector("#video-tag");
-            const inputTag = document.querySelector("#input-tag");
-            
-            inputTag.addEventListener('change',  readVideo)
-            
-            function readVideo(event) {
-              console.log(event.target.files)
-              if (event.target.files && event.target.files[0]) {
-                var reader = new FileReader();
-                
-                reader.onload = function(e) {
-                  console.log('loaded')
-                  videoSrc.src = e.target.result
-                  videoTag.load()
-                }.bind(this)
-            
-                reader.readAsDataURL(event.target.files[0]);
-              }
-            }
-            </script>
+                    <form method="post" enctype="multipart/form-data" action="/video_upload" >
+                        <input type="text" name="videoName"/>
+                        <input type="file" accept="video/mp4" name="videoformat" id="input-tag"/>
+                        <input type="submit" name="submit"  />
+                    </form>
 
             </body>             
             </head> </html>
@@ -124,3 +125,34 @@ def func_home(request_dict):
         return user_home(request_dict, user_info["username"], user_info)
     elif user_type == "manager":
         return manager_home(request_dict)
+
+# +'''
+#             <hr>
+#             <video controls id="video-tag">
+#               <source id="video-source" src="splashVideo">
+#               Your browser does not support the video tag.
+#             </video>
+#
+#             ''' + '''
+#             <script>
+#             const videoSrc = document.querySelector("#video-source");
+#             const videoTag = document.querySelector("#video-tag");
+#             const inputTag = document.querySelector("#input-tag");
+#
+#             inputTag.addEventListener('change',  readVideo)
+#
+#             function readVideo(event) {
+#               console.log(event.target.files)
+#               if (event.target.files && event.target.files[0]) {
+#                 var reader = new FileReader();
+#
+#                 reader.onload = function(e) {
+#                   console.log('loaded')
+#                   videoSrc.src = e.target.result
+#                   videoTag.load()
+#                 }.bind(this)
+#
+#                 reader.readAsDataURL(event.target.files[0]);
+#               }
+#             }
+#             </script>
