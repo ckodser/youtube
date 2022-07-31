@@ -192,7 +192,7 @@ class Database:
 
     def get_video_by_id(self, video_id):
         self.cursor.execute("""SELECT rowid, * FROM videos
-                               WHERE rowid=:video_id""")
+                               WHERE rowid=:video_id""", {'video_id': video_id})
         founds = self.cursor.fetchall()
         if founds:
             assert len(founds) == 1

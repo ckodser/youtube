@@ -9,7 +9,7 @@ from templates.client_home.view import client_home
 from templates.error.view import error_page, error_file
 from templates.Home.view import func_home, approved, unstriked, upload_video
 from templates.favicon.view import favicon
-from templates.video.view import all_videos
+from templates.video.view import all_videos, video_frame, video_page, add_comment, like, dislike
 from templates.convs_and_tickets.view import func_conversations, func_ticket
 from database import Database
 from html import unescape
@@ -124,7 +124,6 @@ def start_listening(HOST, PORT, function_url_list):
                     request_dict["url"] = url
                     request_dict["body"] = data[data.find("\r\n\r\n") + 4:]
                     request_dict["form_parts"] = form_parts
-
                     split_url = url.lstrip("/").split("/")
                     answer = 404
                     for function, url in function_url_list:
@@ -175,6 +174,11 @@ if __name__ == "__main__":
                         (approved, "/approve/<username>"),
                         (upload_video, "/video_upload"),
                         (all_videos, "/videos"),
+                        (video_frame,"/videoFrame/<id>"),
                         (func_conversations, "/tickets"),
-                        (func_ticket, "/conversation/<conv_id>")
+                        (func_ticket, "/conversation/<conv_id>"),
+                        (video_page, "video/<id>"),
+                        (add_comment, "/add_comment/<id>"),
+                        (like, "/like/<id>"),
+                        (dislike, "/dislike/<id>")
                     ])

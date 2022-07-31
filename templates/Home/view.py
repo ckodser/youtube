@@ -25,7 +25,7 @@ def upload_video(request_dict):
         cv2.imwrite(file_address + ".jpg", image)  # save frame as JPEG file
 
     database = Database()
-    database.insert_video(video_dict={"address": file_address, "name": video_name})
+    database.insert_video(video_dict={"address": file_address, "name": video_name, "username": user_name})
 
     return http_ok_header() + f'''
                         <html> <head> <meta http-equiv="refresh" content="0; url=/videos" /> <body>  </body> </head> </html>

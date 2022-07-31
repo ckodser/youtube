@@ -1,0 +1,29 @@
+<html lang="en">
+  <body>
+    <br>
+        <a href="/home"> return to home </a>
+    <br>
+    <img src="/videoFrame/{{video_id}}">
+    <br>
+    like: {{like_count}}
+    dislike: {{dislikes_count}}
+    <form action="/like/{{video_id}}" method="post">
+        <input type="submit" value="like">
+    </form>
+
+    <form action="/dislike/{{video_id}}" method="post">
+        <input type="submit" value="dislike">
+    </form>
+
+    <br>
+        <form action="/add_comment/{{video_id}}" method="post">
+        <textarea rows = "1" cols = "60" name = "comment"></textarea>
+        <input type="submit" value="send">
+        </form>
+
+  <h1> comments </h1>
+  <ul>
+      {{comments_list}}
+  </ul>
+  </body>
+</html>
