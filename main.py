@@ -9,7 +9,7 @@ from templates.client_home.view import client_home
 from templates.error.view import error_page, error_file
 from templates.Home.view import func_home, approved, unstriked, upload_video
 from templates.favicon.view import favicon
-from templates.video.view import all_videos, video_frame, video_page, add_comment, like, dislike
+from templates.video.view import all_videos, video_frame, video_page, add_comment, like, dislike, video_file
 from templates.convs_and_tickets.view import func_conversations, func_ticket
 from database import Database
 from html import unescape
@@ -180,5 +180,6 @@ if __name__ == "__main__":
                         (video_page, "video/<id>"),
                         (add_comment, "/add_comment/<id>"),
                         (like, "/like/<id>"),
-                        (dislike, "/dislike/<id>")
+                        (dislike, "/dislike/<id>"),
+                        (video_file, "videosFILE/<id>")
                     ])

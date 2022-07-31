@@ -20,6 +20,12 @@ def video_frame(request_dict, id):
     video_first_frame_address = video["address"] + ".jpg"
     return get_file_packet(video_first_frame_address)
 
+def video_file(request_dict, id):
+    database = Database()
+    video = database.get_video_by_id(id)
+    video_first_frame_address = video["address"] + ".mp4"
+    return get_file_packet(video_first_frame_address)
+
 
 def video_page(request_dict, id):
     database = Database()

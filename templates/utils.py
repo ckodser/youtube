@@ -40,6 +40,8 @@ def get_file_packet(file_location):
             ans += "Content-Type: image/jpg\r\n".encode()
         elif file_location.endswith("woff2"):
             ans += "Content-Type: font/woff2\r\n".encode()
+        elif file_location.endswith("mp4"):
+            ans += "Content-Type: video/mp4\r\n".encode()
         else:
             print(file_location)
             raise ValueError
