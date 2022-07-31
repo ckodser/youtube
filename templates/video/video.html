@@ -3,6 +3,7 @@
     <br>
         <a href="/home"> return to home </a>
     <br>
+    <h1>{{tag}} </h1>
     <video controls>
         <source src="/videosFILE/1"
                 type="video/mp4">
@@ -18,7 +19,7 @@
     <form action="/dislike/{{video_id}}" method="post">
         <input type="submit" value="dislike">
     </form>
-
+    {{admin_buttons}}
     <br>
         <form action="/add_comment/{{video_id}}" method="post">
         <textarea rows = "1" cols = "60" name = "comment"></textarea>
