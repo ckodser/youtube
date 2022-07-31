@@ -15,7 +15,7 @@ def signin(request_dict):
         for field in data:
             field = field.split("=")
             info[field[0]] = field[1]
-        if info["password"] != info["re_password"] or info["agree-term"] != "on" or info["submit"] != 'Sign+up':
+        if info["password"] != info["re_password"] or "agree-term" not in info or info["submit"] != 'Sign+up':
             with open("templates/signin/index.html", "r", encoding="utf-8") as index:
                 return http_ok_header() + index.read()
         d = Database()

@@ -11,7 +11,7 @@ def upload_video(request_dict):
     user_info = get_account(request_dict)
     if user_info is None or user_info["type"] != "user" or user_info["striked"] == 1:
         request_dict["file_data"] = "FILE DATA REMOVED"
-        return error_page(request_dict)
+        return error_page(request_dict, [])
     user_name = user_info["username"].replace("%40", "@")
     video_name = request_dict['form_parts'][0][1].decode().split("\r\n")[0]
     file_address = f'''videos/{user_name.replace('.', '').replace('@', '')}{random.randint(1, 100000000)}{video_name}'''

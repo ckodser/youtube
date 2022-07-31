@@ -198,8 +198,9 @@ class Database:
             video = founds[0]
             video_dict = {"video_id": video[0], "address": video[1], "name": video[2], "username": video[3],
                           "tag": video[4], "deleted": video[5]}
-            if video_dict["deleted"] == 1:
-                return None
+            # if video_dict["deleted"] == 1:
+            #     print("VIDEO DELETED")
+            #     return None
             return video_dict
         else:
             return None
