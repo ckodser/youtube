@@ -7,9 +7,13 @@ def get_account(request_dict):
         token_id = request_dict["Cookie"]["token"]
         user_name = d.get_token_by_id(token_id)["username"]
         user_info = d.get_account_by_username(user_name)
+        if user_info["type"] != "user" and not request_dict["admin"]:
+            print("PROXY NOT SET")
+            return None
         return user_info
     except:
         return None
+
 
 def http_ok_header(cookies=None):
     if cookies is None:
@@ -20,6 +24,7 @@ def http_ok_header(cookies=None):
             ans += f"Set-Cookie:{cookie_name}={cookie_value}\r\n"
         ans += "\r\n"
         return ans
+
 
 def get_file_packet(file_location):
     if file_location.find("?") != -1:
