@@ -2,6 +2,7 @@ import copy
 import os
 import random
 import socket
+import threading
 from templates.utils import http_ok_header
 from templates.login.view import login, login_helper, login_action
 from templates.signin.view import signin, signin_helper
@@ -15,7 +16,8 @@ from database import Database
 from html import unescape
 
 HOST = "127.0.0.2"  # Standard loopback interface address (localhost)
-PORT = 8080  # Port to listen on (non-privileged ports are > 1023)
+USERPORT = 8080  # Port to listen on (non-privileged ports are > 1023)
+ADMINPORT = 8081  # Port to listen on (non-privileged ports are > 1023)
 global database
 
 
@@ -75,7 +77,7 @@ def is_match(url, split_url):
     return True
 
 
-def start_listening(HOST, PORT, function_url_list):
+def start_listening(HOST, PORT, function_url_list, admin):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         s.bind((HOST, PORT))
@@ -157,10 +159,8 @@ if __name__ == "__main__":
         database.first_time_setup()
     except:
         pass
-    # database.insert_video(video_dict={"address": "1.mp4", "name": "rain"})
-    print("open site by: ", "http://" + str(HOST) + ":" + str(PORT) + "/home")
-    start_listening(HOST, PORT,
-                    [
+
+    function_list=[
                         (client_home, "/home/<id>"),
                         (favicon, "/favicon.ico"),
                         (login, "/login"),
@@ -174,7 +174,7 @@ if __name__ == "__main__":
                         (approved, "/approve/<username>"),
                         (upload_video, "/video_upload"),
                         (all_videos, "/videos"),
-                        (video_frame,"/videoFrame/<id>"),
+                        (video_frame, "/videoFrame/<id>"),
                         (func_conversations, "/tickets"),
                         (func_ticket, "/conversation/<conv_id>"),
                         (video_page, "video/<id>"),
@@ -182,4 +182,14 @@ if __name__ == "__main__":
                         (like, "/like/<id>"),
                         (dislike, "/dislike/<id>"),
                         (video_file, "videosFILE/<id>")
-                    ])
+                    ]
+    # database.insert_video(video_dict={"address": "1.mp4", "name": "rain"})
+    print("user open site by: ", "http://" + str(HOST) + ":" + str(USERPORT) + "/home")
+    print("admin open site by: ", "http://" + str(HOST) + ":" + str(ADMINPORT) + "/home")
+
+    x = threading.Thread(target=start_listening, args=(HOST, USERPORT, function_list, False))
+    y = threading.Thread(target=start_listening, args=(HOST, ADMINPORT, function_list, True))
+    x.start()
+    y.start()
+    x.join()
+    y.join()
