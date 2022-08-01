@@ -218,6 +218,24 @@ class Database:
             self.cursor.execute("""UPDATE videos SET tag=:tag
                                    WHERE rowid=:video_id""",
                                 {'video_id': video_id, 'tag': tag})
+        if tag == "strike":
+            self.cursor.execute("""SELECT rowid, username FROM videos
+                                                       WHERE rowid=:video_id""", {'video_id': video_id})
+            id, username = self.cursor.fetchone()
+            self.cursor.execute("""SELECT rowid, username, tag FROM videos
+                                           WHERE username=:username""", {'username': username})
+            founds = self.cursor.fetchall()
+            strike_flag = False
+            for video in founds:
+                video_tag = video[2]
+                if video_tag == "strike":
+                    if strike_flag:
+                        self.change_strike_status_of_user(username, strike=1)
+                        break
+                    else:
+                        strike_flag = True
+                else:
+                    strike_flag = False
 
     def add_comment_on_video(self, video_id, username, comment):
         ### A user can submit multiple commnets for a video.
