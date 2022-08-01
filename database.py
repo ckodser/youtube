@@ -41,7 +41,11 @@ class Database:
 
             self.cursor.execute("""CREATE TABLE tokens (
                             token_id TEXT,
-                            username TEXT,
+                            username TEXT
+                        )""")
+
+            self.cursor.execute("""CREATE TABLE token_time (
+                            token_id TEXT,
                             time BLOB
                         )""")
 
@@ -284,8 +288,6 @@ class Database:
     ### Token methods
 
     def get_a_new_token_for_user(self, user_dict):
-        if 'time' not in user_dict.keys():
-            user_dict['time'] = datetime.datetime.now()
         with self.conn:
             token_id = ''.join(
                 random.choice(string.digits + string.ascii_uppercase + string.ascii_lowercase) for i in range(10))
@@ -295,6 +297,11 @@ class Database:
             query = 'INSERT INTO tokens (%s) VALUES (%s)' % (columns, placeholders)
             # print(query)
             self.cursor.execute(query, user_dict)
+
+            token_dict = {'token_id': token_id, 'time': datetime.datetime.now()}
+            columns = ', '.join(token_dict.keys())
+            placeholders = ':' + ', :'.join(token_dict.keys())
+            query = 'INSERT INTO token_time (%s) VALUES (%s)' % (columns, placeholders)
         return token_id
 
     def delete_token(self, token_id):
@@ -302,12 +309,12 @@ class Database:
             self.cursor.execute("""DELETE FROM tokens WHERE token_id=:token_id""",
                                 {'token_id': token_id})
 
-    def update_token_time(self, token_id):
-        dt = datetime.datetime.now()
-        with self.conn:
-            self.cursor.execute("""UPDATE tokens SET time=:time
-                                               WHERE token_id=:token_id""",
-                                {'token_id': token_id, 'time': dt})
+    # def update_token_time(self, token_id):
+    #     dt = datetime.datetime.now()
+    #     with self.conn:
+    #         self.cursor.execute("""UPDATE tokens SET time=:time
+    #                                            WHERE token_id=:token_id""",
+    #                             {'token_id': token_id, 'time': dt})
 
     def get_token_by_id(self, token_id):
         self.cursor.execute("""SELECT * FROM tokens
@@ -317,10 +324,28 @@ class Database:
         if founds:
             assert len(founds) == 1
             token = founds[0]
-            token_dict = {'token_id': token[0], 'username': token[1], 'time': token[2]}
+            token_dict = {'token_id': token[0], 'username': token[1]}
             return token_dict
         else:
             return None
+
+    def check_token(self, token_id):
+        self.refresh_token_times()
+        self.cursor.execute("""SELECT * FROM token_time WHERE token_id=:token_id""",
+                            {'token_id': token_id})
+        founds = self.cursor.fetchall()
+        if len(founds) == 0:
+            self.delete_token(token_id)
+            raise Exception("Your token is either invalid or depricated due to long inactivity!")
+        elif len(founds) > 10:
+            raise Exception("Your connection is showing a suspicious pattern!")
+        else:
+            self.get_token_by_id(token_id)
+
+    def refresh_token_times(self):
+        a_minute_ago = datetime.datetime.now() - datetime.timedelta(minutes=1)
+        with self.conn:
+            self.cursor.execute("""DELETE FROM tokens WHERE time < ?""", [a_minute_ago])
 
     ### Ticket and Conversation methods
 
