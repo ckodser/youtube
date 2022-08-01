@@ -76,7 +76,6 @@ class Database:
                                 (MANAGER['username'], MANAGER['password'], MANAGER['type'], MANAGER['striked'],
                                  MANAGER['approved']))
 
-
     ### Users' methods
 
     def insert_user(self, user_dict):
@@ -203,6 +202,9 @@ class Database:
             video = founds[0]
             video_dict = {"video_id": video[0], "address": video[1], "name": video[2], "username": video[3],
                           "tag": video[4], "deleted": video[5]}
+            # if video_dict["deleted"] == 1:
+            #     print("VIDEO DELETED")
+            #     return None
             return video_dict
         else:
             return None
@@ -214,7 +216,8 @@ class Database:
         for video in founds:
             video_dict = {"video_id": video[0], "address": video[1], "name": video[2], "username": video[3],
                           "tag": video[4], "deleted": video[5]}
-            videos.append(video_dict)
+            if video_dict["deleted"]==0:
+                videos.append(video_dict)
         return videos
 
     def tag_the_video(self, video_id, tag):

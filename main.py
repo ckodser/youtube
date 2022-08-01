@@ -10,7 +10,8 @@ from templates.client_home.view import client_home
 from templates.error.view import error_page, error_file
 from templates.Home.view import func_home, approved, unstriked, upload_video
 from templates.favicon.view import favicon
-from templates.video.view import all_videos, video_frame, video_page, add_comment, like, dislike, video_file
+from templates.video.view import all_videos, video_frame, video_page, add_comment, like, dislike, video_file, \
+    danger_tag, remove_video
 from templates.convs_and_tickets.view import func_conversations, func_ticket
 from database import Database
 from html import unescape
@@ -182,7 +183,9 @@ if __name__ == "__main__":
                         (add_comment, "/add_comment/<id>"),
                         (like, "/like/<id>"),
                         (dislike, "/dislike/<id>"),
-                        (video_file, "videosFILE/<id>")
+                        (video_file, "videosFILE/<id>"),
+                        (danger_tag, "/danger_tag/<id>"),
+                        (remove_video, "/remove_video/<id>")
                     ]
     # database.insert_video(video_dict={"address": "1.mp4", "name": "rain"})
     print("user open site by: ", "http://" + str(HOST) + ":" + str(USERPORT) + "/home")
