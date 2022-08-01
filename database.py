@@ -302,6 +302,7 @@ class Database:
             columns = ', '.join(token_dict.keys())
             placeholders = ':' + ', :'.join(token_dict.keys())
             query = 'INSERT INTO token_time (%s) VALUES (%s)' % (columns, placeholders)
+            self.cursor.execute(query, token_dict)
         return token_id
 
     def delete_token(self, token_id):
@@ -317,6 +318,13 @@ class Database:
     #                             {'token_id': token_id, 'time': dt})
 
     def get_token_by_id(self, token_id):
+        with self.conn:
+            token_dict = {'token_id': token_id, 'time': datetime.datetime.now()}
+            columns = ', '.join(token_dict.keys())
+            placeholders = ':' + ', :'.join(token_dict.keys())
+            query = 'INSERT INTO token_time (%s) VALUES (%s)' % (columns, placeholders)
+            self.cursor.execute(query, token_dict)
+
         self.cursor.execute("""SELECT * FROM tokens
                                                WHERE token_id=:token_id""",
                             {'token_id': token_id})
