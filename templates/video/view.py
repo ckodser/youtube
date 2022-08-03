@@ -1,7 +1,7 @@
 from database import Database
 from templates.utils import http_ok_header, get_account
 from templates.utils import get_file_packet
-
+from urllib.parse import unquote_plus
 
 def all_videos(request_dict):
     database = Database()
@@ -38,7 +38,7 @@ def video_page(request_dict, id):
     for comment in comments:
         comments_list += f'''<li> 
         user:{comment["username"]} <br>
-        {comment["comment"]}
+        {unquote_plus(comment["comment"])}
         </li>'''
     user_info = get_account(request_dict)
     if user_info["type"] != "user":
