@@ -43,11 +43,7 @@ def video_page(request_dict, id):
         </li>'''
     user_info = get_account(request_dict)
     if user_info["type"] != "user":
-        admin_buttons = f'''
-            <form action="/danger_tag/{id}" method="post">
-            <input type="submit" value="add dangertag">
-        </form>
-    
+        admin_buttons = f'''    
         <form action="/remove_video/{id}" method="post">
             <input type="submit" value="removevideo">
         </form>
