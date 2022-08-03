@@ -21,12 +21,13 @@ def func_conversations(request_dict):
         Database().insert_ticket({'conv_id': conv_id, 'username': user_info["username"],
                                   'message': unquote_plus(request_dict["body"][len("ticket="):])})
 
-    responce = http_ok_header() + f'''
+    response = http_ok_header() + f'''
     <html> <head> <body>
+    <a href="/home"> Back to home </a>
     '''
 
     if user_type != "manager":
-        responce += f'''
+        response += f'''
         <h1> Create new ticket </h1>
         <form action="/tickets" method="post">
         <textarea rows = "5" cols = "60" name = "ticket">description</textarea>
@@ -39,7 +40,7 @@ def func_conversations(request_dict):
             html_created_conversations += '''
             <li> <a href="/conversation/{}"> {} - Status: {} - Date created: {} </a></li>
             '''.format(conv["conv_id"], conv["conv_id"], conv["status"], conv["time"])
-        responce += '''
+        response += '''
         <h1> Created tickets: </h1>
         <ul> {} </ul>
         '''.format(html_created_conversations)
@@ -51,7 +52,7 @@ def func_conversations(request_dict):
             html_answered_conversations += '''
             <li> <a href="/conversation/{}"> {} - Status: {} - Date created: {} </a></li>
             '''.format(conv["conv_id"], conv["conv_id"], conv["status"], conv["time"])
-        responce += '''
+        response += '''
         <h1> History of tickets: </h1>
         <ul> {} </ul>
         '''.format(html_answered_conversations)
@@ -63,15 +64,15 @@ def func_conversations(request_dict):
             html_open_conversations += '''
             <li> <a href="/conversation/{}"> {} - Status: {} - Date created: {} </a></li>
             '''.format(conv["conv_id"], conv["conv_id"], conv["status"], conv["time"])
-        responce += '''
+        response += '''
         <h1> Open tickets: </h1>
         <ul> {} </ul>
         '''.format(html_open_conversations)
 
-    responce += f'''
+    response += f'''
     </body> </head> </html>
     '''
-    return responce
+    return response
 
 
 def func_ticket(request_dict, conv_id):
@@ -89,9 +90,10 @@ def func_ticket(request_dict, conv_id):
              not (user_type == "admin" and conv["receiver"] == "")):
         return error_page(request_dict, [])
 
-    responce = http_ok_header() + f'''
+    response = http_ok_header() + f'''
     <html> <head> <body>
     <a href="/tickets"> Back to tickets list </a>
+    <h3> status:{conv['status']}<h3> 
     '''
 
     body_dict = parse_qs(request_dict["body"])
@@ -99,13 +101,13 @@ def func_ticket(request_dict, conv_id):
     if 'takeTicket' in body_dict:
         Database().update_conv_status(conv_id, "new")
         Database().update_conv_receiver(conv_id, user_name)
-        responce += f'''
+        response += f'''
         <h1> Ticket taken </h1>
         '''
 
     if 'statusClosed' in body_dict:
         Database().update_conv_status(conv_id, "closed")
-        responce += f'''
+        response += f'''
         <h1> Ticket closed </h1>
         '''
 
@@ -118,25 +120,25 @@ def func_ticket(request_dict, conv_id):
         if user_name == conv["sender"] and status != 'waiting':
             status = 'new'
         Database().update_conv_status(conv_id, status)
-        responce += f'''
+        response += f'''
         <h1> New message added </h1>
         '''
 
     conv = Database().get_conv_by_id(conv_id)
 
     if user_type == "admin" and conv['receiver'] == '':
-        responce += f'''
+        response += f'''
         <form action="/conversation/{conv_id}" method="post"> <input type="submit" name="takeTicket" value="Take this ticket"> </form>
         '''
 
     if conv['receiver'] == user_name and conv['status'] != 'closed':
-        responce += f'''
+        response += f'''
         <form action="/conversation/{conv_id}" method="post"> <input type="submit" name="statusClosed" value="Change status to Closed"> </form>
         '''
 
     if user_name in [conv['sender'], conv['receiver']] \
             and conv['status'] != "closed":
-        responce += f'''
+        response += f'''
         <h1>New message:</h1>
         <form action="/conversation/{conv_id}" method="post">
         <textarea rows = "5" cols = "60" name = "ticket">description</textarea>
@@ -156,12 +158,12 @@ def func_ticket(request_dict, conv_id):
         <p>
         {}
         </p></li>
-        '''.format(ticket["time"], ticket["username"], ticket["message"])
+        '''.format(ticket["time"], unquote_plus(ticket["username"]), ticket["message"])
 
-    responce += '''
+    response += '''
     <h1> Tickets: </h1>
     <ul> {} </ul>
     </body> </head> </html>
     '''.format(html_tickets)
 
-    return responce
+    return response
