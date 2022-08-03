@@ -99,6 +99,13 @@ def start_listening(HOST, PORT, function_url_list, admin):
                         content_length = data[
                                          content_length_start:content_length_start + content_length_length].decode()
                         content_length = int(content_length)
+                        if content_length > 50000000:
+                            print("LARGE FILE!")
+                            answer = error_page(request_dict, function_url_list)
+                            answer = answer.encode()
+                            conn.sendall(answer)
+                            conn.close()
+                            continue
                         while len(data) < content_length:
                             data += conn.recv(50000000)
                         header_end = data.find("\r\n\r\n".encode())
