@@ -54,6 +54,13 @@ def user_home(request_dict, user_name, user_info):
 
 def admin_home(request_dict, user_name, user_info):
     user_name_cool = user_name.replace("%40", "@")
+    d = Database()
+    list = ""
+    striked_users = (d.get_all_striked_users())
+    for user in striked_users:
+        list += f''' <li>  <a href=/unstriked/{user["username"]}> unstriked {user["username"]} </a> </li>\n'''
+
+
     return http_ok_header() + f'''
             <html> <head> <body> <h1> Hello ADMIN {user_name_cool}</h1> 
             <br>
@@ -61,6 +68,9 @@ def admin_home(request_dict, user_name, user_info):
              <br>
             <a href="/tickets"> tickets </a> 
             <br>
+            <ul>
+            {list}
+            </ul>
             </body>             
             </head> </html>
                         '''
@@ -79,7 +89,7 @@ def approved(request_dict, username):
 
 def unstriked(request_dict, username):
     user_info = get_account(request_dict)
-    if user_info is None or user_info["type"] != "manager":
+    if user_info is None or user_info["type"] == "admin":
         return error_page(request_dict, [])
 
     d = Database()
