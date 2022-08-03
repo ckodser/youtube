@@ -10,8 +10,7 @@ from templates.client_home.view import client_home
 from templates.error.view import error_page, error_file
 from templates.Home.view import func_home, approved, unstriked, upload_video
 from templates.favicon.view import favicon
-from templates.video.view import all_videos, video_frame, video_page, add_comment, like, dislike, video_file, \
-    danger_tag, remove_video
+from templates.video.view import all_videos, video_frame, video_page, add_comment, like, dislike, video_file, remove_video
 from templates.convs_and_tickets.view import func_conversations, func_ticket
 from database import Database
 from html import unescape
