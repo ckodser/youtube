@@ -3,6 +3,7 @@ from ..client_home.view import client_home
 from database import Database
 from ..login.view import login
 from templates.utils import http_ok_header
+from urllib.parse import unquote_plus
 
 
 def signin(request_dict):
@@ -14,8 +15,8 @@ def signin(request_dict):
         data = request_dict["body"].split("&")
         for field in data:
             field = field.split("=")
-            info[field[0]] = field[1]
-        if info["password"] != info["re_password"] or "agree-term" not in info or info["submit"] != 'Sign+up':
+            info[field[0]] = unquote_plus(field[1])
+        if info["password"] != info["re_password"] or "agree-term" not in info or info["submit"] != 'Sign up':
             with open("templates/signin/index.html", "r", encoding="utf-8") as index:
                 return http_ok_header() + index.read()
         d = Database()

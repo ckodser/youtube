@@ -2,7 +2,7 @@ from ..utils import get_file_packet
 from database import Database
 from ..client_home.view import client_home
 from templates.utils import http_ok_header
-
+from urllib.parse import unquote_plus
 
 def login(request_dict):
     with open("templates/login/index.html", "r", encoding="utf-8") as index:
@@ -18,8 +18,8 @@ def login_action(request_dict, rest):
     url: str = rest[0]
     email_end = url.find("email=") + 6
     pass_end = url.find("pass=") + 5
-    email = url[email_end:pass_end - 6]
-    pass_word = url[pass_end:].replace("%23", "#")
+    email = unquote_plus(url[email_end:pass_end - 6])
+    pass_word = unquote_plus(url[pass_end:].replace("%23", "#"))
     d = Database()
     user = d.get_account_by_username(email)
     try:

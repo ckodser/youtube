@@ -165,11 +165,11 @@ class Database:
             self.cursor.execute("""DELETE FROM users WHERE username=:username""",
                                 {'username': username})
 
-    def change_strike_status_of_user(self, username, striked):
+    def change_strike_status_of_user(self, username, strike):
         with self.conn:
             self.cursor.execute("""UPDATE users SET striked=:striked
                                    WHERE username=:username""",
-                                {'username': username, 'type': 'user', 'striked': striked})
+                                {'username': username, 'type': 'user', 'striked': strike})
 
     ### Videos' methods
     def insert_video(self, video_dict):

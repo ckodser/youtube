@@ -14,6 +14,7 @@ from templates.video.view import all_videos, video_frame, video_page, add_commen
 from templates.convs_and_tickets.view import func_conversations, func_ticket
 from database import Database
 from html import unescape
+from urllib.parse import unquote_plus
 
 HOST = "127.0.0.2"  # Standard loopback interface address (localhost)
 USERPORT = 8080  # Port to listen on (non-privileged ports are > 1023)
@@ -126,7 +127,7 @@ def start_listening(HOST, PORT, function_url_list, admin):
                     request_dict["url"] = url
                     request_dict["body"] = data[data.find("\r\n\r\n") + 4:]
                     request_dict["form_parts"] = form_parts
-                    request_dict["admin"]=admin
+                    request_dict["admin"] = admin
                     split_url = url.lstrip("/").split("/")
                     answer = 404
                     for function, url in function_url_list:
@@ -171,7 +172,7 @@ if __name__ == "__main__":
                         (signin_helper, "/templates/signin/<+>"),
                         (signin, "/signinadmin"),
                         (func_home, "/home"),
-                        (unstriked, "/unstrike/<username>"),
+                        (unstriked, "/unstriked/<username>"),
                         (approved, "/approve/<username>"),
                         (upload_video, "/video_upload"),
                         (all_videos, "/videos"),

@@ -89,7 +89,7 @@ def approved(request_dict, username):
 
 def unstriked(request_dict, username):
     user_info = get_account(request_dict)
-    if user_info is None or user_info["type"] == "admin":
+    if user_info is None or user_info["type"] != "admin":
         return error_page(request_dict, [])
 
     d = Database()
