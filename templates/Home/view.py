@@ -54,8 +54,18 @@ def user_home(request_dict, user_name, user_info):
                         <input type="file" accept="video/mp4" name="videoformat" id="input-tag"/>
                         <input type="submit" name="submit"  />
                     </form>
-
-            </body>             
+            '''+'''
+            <script>
+            var uploadField = document.getElementById("input-tag");
+            uploadField.onchange = function() {
+                if(this.files[0].size > 50000000){
+                   alert("File is too big!");
+                   this.value = "";
+                };
+            };
+            </script>
+            </body> 
+    
             </head> </html>
                         '''
 
