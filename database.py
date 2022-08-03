@@ -77,7 +77,6 @@ class Database:
                                  MANAGER['approved']))
 
     ### Users' methods
-
     def insert_user(self, user_dict):
         type = user_dict['type']
         if type not in ['admin', 'user']:
@@ -166,11 +165,11 @@ class Database:
             self.cursor.execute("""DELETE FROM users WHERE username=:username""",
                                 {'username': username})
 
-    def change_strike_status_of_user(self, username, strike):
+    def change_strike_status_of_user(self, username, striked):
         with self.conn:
             self.cursor.execute("""UPDATE users SET striked=:striked
-                                   WHERE username=:username AND type=:type""",
-                                {'username': username, 'type': 'client', 'striked': strike})
+                                   WHERE username=:username""",
+                                {'username': username, 'type': 'user', 'striked': striked})
 
     ### Videos' methods
     def insert_video(self, video_dict):
@@ -195,9 +194,11 @@ class Database:
         self.cursor.execute("""SELECT rowid, username FROM videos
                                                    WHERE rowid=:video_id""", {'video_id': video_id})
         id, username = self.cursor.fetchone()
+        print(username)
         self.cursor.execute("""SELECT rowid, username, deleted FROM videos
                                        WHERE username=:username""", {'username': username})
         founds = self.cursor.fetchall()
+        print(founds)
         strike_flag = False
         for video in founds:
             deleted = video[2]
