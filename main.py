@@ -23,6 +23,7 @@ from urllib.parse import unquote_plus
 
 HOST = "127.0.0.2"  # Standard loopback interface address (localhost)
 HOSTPROXY = "127.0.0.3"
+HOSTPROXYSEND = "127.0.0.1"
 USERPORT = 8080  # Port to listen on (non-privileged ports are > 1023)
 ADMINPORT = 8081  # Port to listen on (non-privileged ports are > 1023)
 global database
@@ -97,13 +98,14 @@ def start_listening(HOST, PORT, function_url_list, admin, allowed_ip):
             conn = None
             try:
                 conn, addr = s.accept()
-                if allowed_ip is not None and (allowed_ip != addr[0] or PORT != addr[1]):
-                    print("USE PROXY!")
-                    # answer = error_page({"url": "you should use proxy!"}, function_url_list)
-                    # answer = answer.encode()
-                    # conn.sendall(answer)
-                    # conn.close()
-                    # continue
+                if allowed_ip is not None and allowed_ip != addr[0]:
+                    text = f"USE PROXY! you should use IP:{allowed_ip}  but you use IP:{addr[0]}"
+                    print(text)
+                    answer = error_page({"url": text}, function_url_list)
+                    answer = answer.encode()
+                    conn.sendall(answer)
+                    conn.close()
+                    continue
                 with conn:
                     data = conn.recv(50000000)
                     form_parts = []
@@ -234,7 +236,7 @@ if __name__ == "__main__":
     print("admin open host by: ", "http://" + str(HOSTPROXY) + ":" + str(ADMINPORT) + "/proxy_home")
 
     x = threading.Thread(target=start_listening, args=(HOST, USERPORT, function_list, False, None))
-    y = threading.Thread(target=start_listening, args=(HOST, ADMINPORT, function_list, True, HOSTPROXY))
+    y = threading.Thread(target=start_listening, args=(HOST, ADMINPORT, function_list, True, HOSTPROXYSEND))
     z = threading.Thread(target=start_listening, args=(HOSTPROXY, ADMINPORT, function_list_proxy, None, None))
     x.start()
     y.start()
