@@ -183,7 +183,6 @@ if __name__ == "__main__":
                         (like, "/like/<id>"),
                         (dislike, "/dislike/<id>"),
                         (video_file, "videosFILE/<id>"),
-                        (danger_tag, "/danger_tag/<id>"),
                         (remove_video, "/remove_video/<id>")
                     ]
     # database.insert_video(video_dict={"address": "1.mp4", "name": "rain"})
