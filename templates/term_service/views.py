@@ -5,5 +5,5 @@ from urllib.parse import unquote_plus
 
 
 def get_term_service(request_dict):
-    with open("templates/video/term.html") as f:
+    with open("templates/term_service/term.html") as f:
         return http_ok_header() + f.read()

@@ -7,6 +7,12 @@ from templates.client_home.view import client_home
 import cv2
 
 
+def sign_out(request_dict):
+    return http_ok_header([("token", "signOut")]) + f'''
+                    <html> <head> <meta http-equiv="refresh" content="0; url=/login" /> <body>  </body> </head> </html>
+                    '''
+
+
 def upload_video(request_dict):
     user_info = get_account(request_dict)
     if user_info is None or user_info["type"] != "user" or user_info["striked"] == 1:
@@ -35,7 +41,9 @@ def upload_video(request_dict):
 def user_home(request_dict, user_name, user_info):
     user_name_cool = user_name.replace("%40", "@")
     return http_ok_header() + f'''
-            <html> <head> <body> <h1> Hello USER {user_name_cool}</h1> 
+            <html> <head> <body> 
+            <a href="/signOut"> sign out </a>
+            <h1> Hello USER {user_name_cool}</h1> 
             <br>
              <a href="/videos"> videos </a> 
              <br>
@@ -60,9 +68,10 @@ def admin_home(request_dict, user_name, user_info):
     for user in striked_users:
         list += f''' <li>  <a href=/unstriked/{user["username"]}> unstriked {user["username"]} </a> </li>\n'''
 
-
     return http_ok_header() + f'''
-            <html> <head> <body> <h1> Hello ADMIN {user_name_cool}</h1> 
+            <html> <head> <body>
+            <a href="/signOut"> sign out </a>
+            <h1> Hello ADMIN {user_name_cool}</h1> 
             <br>
              <a href="/videos"> videos </a> 
              <br>
@@ -110,7 +119,9 @@ def manager_home(request_dict):
         list += f''' <li>  <a href=/unstriked/{user["username"]}> unstriked {user["username"]} </a> </li>\n'''
 
     return http_ok_header() + f'''
-            <html> <head> <body> <h1> Hello BOSS</h1> 
+            <html> <head> <body>
+            <a href="/signOut"> sign out </a>
+            <h1> Hello BOSS</h1> 
             <br>
             <a href="/tickets"> tickets </a> 
             <br>

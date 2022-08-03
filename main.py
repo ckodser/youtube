@@ -8,7 +8,7 @@ from templates.login.view import login, login_helper, login_action
 from templates.signin.view import signin, signin_helper
 from templates.client_home.view import client_home
 from templates.error.view import error_page, error_file
-from templates.Home.view import func_home, approved, unstriked, upload_video
+from templates.Home.view import func_home, approved, unstriked, upload_video, sign_out
 from templates.favicon.view import favicon
 from templates.video.view import all_videos, video_frame, video_page, add_comment, like, dislike, video_file, remove_video
 from templates.convs_and_tickets.view import func_conversations, func_ticket
@@ -186,7 +186,8 @@ if __name__ == "__main__":
                         (dislike, "/dislike/<id>"),
                         (video_file, "videosFILE/<id>"),
                         (remove_video, "/remove_video/<id>"),
-                        (term_service, "/term_service")
+                        (get_term_service, "/term_service"),
+                        (sign_out, "/signOut")
                     ]
     # database.insert_video(video_dict={"address": "1.mp4", "name": "rain"})
     print("user open site by: ", "http://" + str(HOST) + ":" + str(USERPORT) + "/home")
