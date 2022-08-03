@@ -13,6 +13,7 @@ from templates.favicon.view import favicon
 from templates.video.view import all_videos, video_frame, video_page, add_comment, like, dislike, video_file, remove_video
 from templates.convs_and_tickets.view import func_conversations, func_ticket
 from database import Database
+from templates.term_service.views import get_term_service
 from html import unescape
 
 HOST = "127.0.0.2"  # Standard loopback interface address (localhost)
@@ -183,7 +184,8 @@ if __name__ == "__main__":
                         (like, "/like/<id>"),
                         (dislike, "/dislike/<id>"),
                         (video_file, "videosFILE/<id>"),
-                        (remove_video, "/remove_video/<id>")
+                        (remove_video, "/remove_video/<id>"),
+                        (term_service, "/term_service")
                     ]
     # database.insert_video(video_dict={"address": "1.mp4", "name": "rain"})
     print("user open site by: ", "http://" + str(HOST) + ":" + str(USERPORT) + "/home")
