@@ -71,7 +71,8 @@ def video_page(request_dict, id):
 def dislike(request_dict, id):
     database = Database()
     user_info = get_account(request_dict)
-    database.add_change_liked_status_of_video(id, user_info["username"], 0)
+    if user_info["type"] == "user":
+        database.add_change_liked_status_of_video(id, user_info["username"], 0)
     return http_ok_header() + f'''
                             <html> <head> <meta http-equiv="refresh" content="0; url=/video/{id}" /> <body>  </body> </head> </html>
                             '''
@@ -80,21 +81,11 @@ def dislike(request_dict, id):
 def like(request_dict, id):
     database = Database()
     user_info = get_account(request_dict)
-    database.add_change_liked_status_of_video(id, user_info["username"], 1)
+    if user_info["type"] == "user":
+        database.add_change_liked_status_of_video(id, user_info["username"], 1)
     return http_ok_header() + f'''
                         <html> <head> <meta http-equiv="refresh" content="0; url=/video/{id}" /> <body>  </body> </head> </html>
                         '''
-
-
-def danger_tag(request_dict, id):
-    database = Database()
-    user_info = get_account(request_dict)
-    if user_info["type"] != "user":
-        database.tag_the_video(id, "danger")
-
-    return http_ok_header() + f'''
-                            <html> <head> <meta http-equiv="refresh" content="0; url=/video/{id}" /> <body>  </body> </head> </html>
-                            '''
 
 
 def remove_video(request_dict, id):
@@ -113,7 +104,10 @@ def add_comment(request_dict, id):
     database = Database()
     user_info = get_account(request_dict)
     comment = request_dict["body"].lstrip("comment=").replace("+", " ")
-    database.add_comment_on_video(id, user_info["username"].replace("%40", "@"), comment)
+    if user_info["type"] == "user":
+        database.add_comment_on_video(id, user_info["username"].replace("%40", "@"), comment)
+    else:
+        database.tag_the_video(id, comment)
     return http_ok_header() + f'''
                         <html> <head> <meta http-equiv="refresh" content="0; url=/video/{id}" /> <body>  </body> </head> </html>
                         '''
