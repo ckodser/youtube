@@ -3,6 +3,7 @@ from templates.utils import http_ok_header, get_account
 from templates.utils import get_file_packet
 from urllib.parse import unquote_plus
 
+
 def all_videos(request_dict):
     database = Database()
     videos = database.get_all_videos()
@@ -55,13 +56,26 @@ def video_page(request_dict, id):
         admin_buttons = ""
 
     tags = video["tag"]
+    user_buttons = ""
+    if user_info["type"] == "user":
+        user_buttons = f'''
+        <form action="/like/{id}" method="post">
+            <input type="submit" value="like">
+        </form>
+    
+        <form action="/dislike/{id}" method="post">
+            <input type="submit" value="dislike">
+        </form>
+        '''
     replace_list = [
         ("video_id", id),
+        ("video_name", video["name"]),
         ("like_count", database.get_video_likes(id)['likes']),
         ("dislikes_count", database.get_video_likes(id)['dislikes']),
         ("comments_list", comments_list),
         ("admin_buttons", admin_buttons),
-        ("tag", tags)
+        ("tag", tags),
+        ("user_buttons", user_buttons)
     ]
     for key, value in replace_list:
         text = text.replace("{{" + key + "}}", str(value))

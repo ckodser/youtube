@@ -3,7 +3,7 @@
     <br>
         <a href="/home"> return to home </a>
     <br>
-    <h1>{{tag}} </h1>
+    <h1>{{video_name}}:{{tag}} </h1>
     <video controls>
         <source src="/videosFILE/1"
                 type="video/mp4">
@@ -12,13 +12,7 @@
     <br>
     like: {{like_count}}
     dislike: {{dislikes_count}}
-    <form action="/like/{{video_id}}" method="post">
-        <input type="submit" value="like">
-    </form>
-
-    <form action="/dislike/{{video_id}}" method="post">
-        <input type="submit" value="dislike">
-    </form>
+    {{user_buttons}}
     {{admin_buttons}}
     <br>
         <form action="/add_comment/{{video_id}}" method="post">
