@@ -4,7 +4,8 @@ import random
 import socket
 import threading
 
-from templates.proxyHome.view import proxy_home, forward_func, proxy_login
+from templates.proxyHome.view import proxy_home, forward_func, proxy_login, proxy_account_build, \
+    proxy_build_account_action
 from templates.utils import http_ok_header
 from templates.login.view import login, login_helper, login_action
 from templates.signin.view import signin, signin_helper
@@ -15,7 +16,7 @@ from templates.favicon.view import favicon
 from templates.video.view import all_videos, video_frame, video_page, add_comment, like, dislike, video_file, \
     remove_video
 from templates.convs_and_tickets.view import func_conversations, func_ticket
-from database import Database
+from database import Database, Proxy_Database
 from templates.term_service.views import get_term_service
 from html import unescape
 from urllib.parse import unquote_plus
@@ -26,9 +27,8 @@ USERPORT = 8080  # Port to listen on (non-privileged ports are > 1023)
 ADMINPORT = 8081  # Port to listen on (non-privileged ports are > 1023)
 global database
 
-
-def get_database():
-    return database
+def get_HOST():
+    return HOST
 
 
 def to_request_dict(data):
@@ -55,6 +55,8 @@ def to_request_dict(data):
 
 
 def get_parameters(url, split_url):
+    if url == "*":
+        return {}
     url = url.lstrip("/").split("/")
     dict = {}
     for i, part in enumerate(url):
@@ -68,6 +70,8 @@ def get_parameters(url, split_url):
 
 
 def is_match(url, split_url):
+    if url == "*":
+        return True
     url = url.lstrip("/").split("/")
     for i, part in enumerate(url):
         if len(split_url) <= i:
@@ -172,8 +176,13 @@ def start_listening(HOST, PORT, function_url_list, admin):
 if __name__ == "__main__":
     global database
     database = Database()
+    proxy_database = Proxy_Database()
     try:
         database.first_time_setup()
+    except:
+        pass
+    try:
+        proxy_database.first_time_setup()
     except:
         pass
 
@@ -207,7 +216,9 @@ if __name__ == "__main__":
     function_list_proxy = [
         (proxy_home, "/proxy_home"),
         (proxy_login, "/proxy_login"),
-        (forward_func, "ELSE")
+        (proxy_account_build, "/proxy_account_build"),
+        (proxy_build_account_action, "/proxy_build_account_action"),
+        (forward_func, "*")
     ]
     # database.insert_video(video_dict={"address": "1.mp4", "name": "rain"})
     print("user open site by: ", "http://" + str(HOST) + ":" + str(USERPORT) + "/home")

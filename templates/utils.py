@@ -1,4 +1,4 @@
-from database import Database
+from database import Database, Proxy_Database
 
 
 def get_account(request_dict):
@@ -14,6 +14,15 @@ def get_account(request_dict):
     except:
         return None
 
+def get_proxy_account(request_dict):
+    try:
+        d = Proxy_Database()
+        token_id = request_dict["Cookie"]["proxytoken"]
+        user_name = d.get_token_by_id(token_id)["username"]
+        user_info = d.get_account_by_username(user_name)
+        return user_info
+    except:
+        return None
 
 def http_ok_header(cookies=None):
     if cookies is None:
