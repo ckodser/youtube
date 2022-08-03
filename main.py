@@ -27,6 +27,7 @@ USERPORT = 8080  # Port to listen on (non-privileged ports are > 1023)
 ADMINPORT = 8081  # Port to listen on (non-privileged ports are > 1023)
 global database
 
+
 def get_HOST():
     return HOST
 
@@ -87,7 +88,7 @@ def is_match(url, split_url):
     return True
 
 
-def start_listening(HOST, PORT, function_url_list, admin):
+def start_listening(HOST, PORT, function_url_list, admin, allowed_ip):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         s.bind((HOST, PORT))
@@ -96,6 +97,13 @@ def start_listening(HOST, PORT, function_url_list, admin):
             conn = None
             try:
                 conn, addr = s.accept()
+                if allowed_ip is not None and (allowed_ip != addr[0] or PORT != addr[1]):
+                    print("USE PROXY!")
+                    # answer = error_page({"url": "you should use proxy!"}, function_url_list)
+                    # answer = answer.encode()
+                    # conn.sendall(answer)
+                    # conn.close()
+                    # continue
                 with conn:
                     data = conn.recv(50000000)
                     form_parts = []
@@ -225,9 +233,9 @@ if __name__ == "__main__":
     print("admin open site by: ", "http://" + str(HOST) + ":" + str(ADMINPORT) + "/home")
     print("admin open host by: ", "http://" + str(HOSTPROXY) + ":" + str(ADMINPORT) + "/proxy_home")
 
-    x = threading.Thread(target=start_listening, args=(HOST, USERPORT, function_list, False))
-    y = threading.Thread(target=start_listening, args=(HOST, ADMINPORT, function_list, True))
-    z = threading.Thread(target=start_listening, args=(HOSTPROXY, ADMINPORT, function_list_proxy, None))
+    x = threading.Thread(target=start_listening, args=(HOST, USERPORT, function_list, False, None))
+    y = threading.Thread(target=start_listening, args=(HOST, ADMINPORT, function_list, True, HOSTPROXY))
+    z = threading.Thread(target=start_listening, args=(HOSTPROXY, ADMINPORT, function_list_proxy, None, None))
     x.start()
     y.start()
     z.start()

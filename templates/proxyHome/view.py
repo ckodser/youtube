@@ -56,12 +56,17 @@ def proxy_build_account_action(request_dict):
 
 
 def forward_func(request_dict):
-    TCP_IP = "127.0.0.2"
-    TCP_PORT = 8081
-    BUFFER_SIZE = 500000
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.connect((TCP_IP, TCP_PORT))
-    s.send(request_dict["packet"])
-    data = s.recv(BUFFER_SIZE)
-    s.close()
-    return data
+    user = get_proxy_account(request_dict)
+    if user is not None and user["type"] == "manager" or user["type"] == "admin":
+        TCP_IP = "127.0.0.2"
+        TCP_PORT = 8081
+        BUFFER_SIZE = 500000
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.connect((TCP_IP, TCP_PORT))
+        s.send(request_dict["packet"])
+        data = s.recv(BUFFER_SIZE)
+        s.close()
+        return data
+    else:
+        return None
+
