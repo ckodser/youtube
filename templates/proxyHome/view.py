@@ -1,7 +1,10 @@
+import random
 import socket
 
 from database import Database, Proxy_Database
 from templates.utils import http_ok_header, get_proxy_account
+
+HOSTPROXYSEND = "127.0.0.9"
 
 
 def proxy_home(request_dict):
@@ -57,16 +60,21 @@ def proxy_build_account_action(request_dict):
 
 def forward_func(request_dict):
     user = get_proxy_account(request_dict)
-    if user is not None and user["type"] == "manager" or user["type"] == "admin":
+    if user is not None and (user["type"] == "manager" or user["type"] == "admin"):
         TCP_IP = "127.0.0.2"
         TCP_PORT = 8081
         BUFFER_SIZE = 500000
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.connect((TCP_IP, TCP_PORT))
+        while True:
+            try:
+                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                s.bind((HOSTPROXYSEND, random.randint(1500, 5000)))
+                s.connect((TCP_IP, TCP_PORT))
+                break
+            except:
+                pass
         s.send(request_dict["packet"])
         data = s.recv(BUFFER_SIZE)
         s.close()
         return data
     else:
         return None
-

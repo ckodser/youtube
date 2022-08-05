@@ -23,7 +23,7 @@ from urllib.parse import unquote_plus
 
 HOST = "127.0.0.2"  # Standard loopback interface address (localhost)
 HOSTPROXY = "127.0.0.3"
-HOSTPROXYSEND = "127.0.0.1"
+HOSTPROXYSEND = "127.0.0.9"
 USERPORT = 8080  # Port to listen on (non-privileged ports are > 1023)
 ADMINPORT = 8081  # Port to listen on (non-privileged ports are > 1023)
 global database
