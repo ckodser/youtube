@@ -1,3 +1,5 @@
+import os
+
 from database import Database, Proxy_Database
 
 
@@ -35,7 +37,7 @@ def http_ok_header(cookies=None):
         return ans
 
 
-def get_file_packet(file_location):
+def get_file_packet(file_location, is_proxy=False):
     if file_location.find("?") != -1:
         file_location = file_location[:file_location.find("?")]
     with open(file_location, "rb") as f:
@@ -59,6 +61,7 @@ def get_file_packet(file_location):
         else:
             print(file_location)
             raise ValueError
+        ans += f"Content-Length: {os.stat(file_location).st_size}\r\n".encode()
         ans += "Accept-Ranges: bytes\r\n\r\n".encode()
         ans += f.read()
         return ans

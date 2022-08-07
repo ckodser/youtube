@@ -63,7 +63,7 @@ def forward_func(request_dict):
     if user is not None and (user["type"] == "manager" or user["type"] == "admin"):
         TCP_IP = "127.0.0.2"
         TCP_PORT = 8081
-        BUFFER_SIZE = 500000
+        BUFFER_SIZE = 50000000
         while True:
             try:
                 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -73,8 +73,21 @@ def forward_func(request_dict):
             except:
                 pass
         s.send(request_dict["packet"])
+        conn = request_dict["conn"]
         data = s.recv(BUFFER_SIZE)
+        conn.sendall(data)
+        print(f"PROXY SEND {len(data)} bytes to admin")
+        if data.find("Content-Length".encode()) != -1:
+            content_length_start = data.find("Content-Length".encode()) + 16
+            content_length_length = data[content_length_start:].find("\r\n".encode())
+            content_length = data[
+                             content_length_start:content_length_start + content_length_length].decode()
+            content_length = int(content_length)
+            print(f"proxy content length: {content_length}")
+            while len(data) < content_length:
+                new_data = s.recv(BUFFER_SIZE)
+                conn.sendall(new_data)
+                print(f"PROXY SEND {len(new_data)} bytes to admin (IN ADDITION)")
         s.close()
-        return data
-    else:
-        return None
+        conn.close()
+    return None

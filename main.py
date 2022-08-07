@@ -157,6 +157,7 @@ def start_listening(HOST, PORT, function_url_list, admin, allowed_ip):
                     request_dict["form_parts"] = form_parts
                     request_dict["admin"] = admin
                     request_dict["packet"] = coded_data
+                    request_dict["conn"]=conn
                     split_url = url.lstrip("/").split("/")
                     answer = 404
                     for function, url in function_url_list:
