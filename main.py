@@ -44,6 +44,9 @@ def to_request_dict(data):
         for cookie in cookies:
             cookies_dict[cookie.split("=")[0].lstrip().rstrip()] = cookie.split("=")[1].lstrip().rstrip()
         request_dict["Cookie"] = cookies_dict
+        if "token" in cookies_dict:
+            d = Database()
+            d.check_token(cookies_dict["token"])
 
     if "Content-Disposition" in request_dict:
         cookies = request_dict["Content-Disposition"].split(";")
@@ -157,7 +160,7 @@ def start_listening(HOST, PORT, function_url_list, admin, allowed_ip):
                     request_dict["form_parts"] = form_parts
                     request_dict["admin"] = admin
                     request_dict["packet"] = coded_data
-                    request_dict["conn"]=conn
+                    request_dict["conn"] = conn
                     split_url = url.lstrip("/").split("/")
                     answer = 404
                     for function, url in function_url_list:
