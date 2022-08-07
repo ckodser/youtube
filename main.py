@@ -46,7 +46,10 @@ def to_request_dict(data):
         request_dict["Cookie"] = cookies_dict
         if "token" in cookies_dict:
             d = Database()
-            d.check_token(cookies_dict["token"])
+            try:
+                d.check_token(request_dict["Cookie"]["token"])
+            except:
+                request_dict["Cookie"]["token"]='INVALID_TOKEN'
 
     if "Content-Disposition" in request_dict:
         cookies = request_dict["Content-Disposition"].split(";")
