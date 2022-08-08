@@ -48,8 +48,9 @@ def to_request_dict(data):
             d = Database()
             try:
                 d.check_token(request_dict["Cookie"]["token"])
-            except:
-                request_dict["Cookie"]["token"]='INVALID_TOKEN'
+            except Exception as e:
+                print("Oh no! {}".format(e))
+                request_dict["Cookie"]["token"] = 'INVALID_TOKEN'
 
     if "Content-Disposition" in request_dict:
         cookies = request_dict["Content-Disposition"].split(";")
@@ -104,6 +105,13 @@ def start_listening(HOST, PORT, function_url_list, admin, allowed_ip):
             conn = None
             try:
                 conn, addr = s.accept()
+                if allowed_ip is None:
+                    try:
+                        Database().check_ip(addr[0])
+                    except Exception as e:
+                        print("Oh no! {}".format(e))
+                        conn.close()
+                        continue
                 if allowed_ip is not None and allowed_ip != addr[0]:
                     text = f"USE PROXY! you should use IP:{allowed_ip}  but you use IP:{addr[0]}"
                     print(text)
@@ -184,6 +192,7 @@ def start_listening(HOST, PORT, function_url_list, admin, allowed_ip):
                         answer = answer.encode()
                     conn.sendall(answer)
             except KeyboardInterrupt:
+                print("conn closed...")
                 if conn is not None:
                     conn.close()
                 break

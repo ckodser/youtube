@@ -86,8 +86,12 @@ def forward_func(request_dict):
             print(f"proxy content length: {content_length}")
             while len(data) < content_length:
                 new_data = s.recv(BUFFER_SIZE)
+                if len(new_data) == 0:
+                    print("proxy connection closed")
+                    break
                 conn.sendall(new_data)
                 print(f"PROXY SEND {len(new_data)} bytes to admin (IN ADDITION)")
+                data += new_data
         s.close()
         conn.close()
     return None

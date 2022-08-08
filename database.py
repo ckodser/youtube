@@ -49,6 +49,11 @@ class Database:
                             time BLOB
                         )""")
 
+            self.cursor.execute("""CREATE TABLE ip_time (
+                            ip TEXT,
+                            time BLOB
+                        )""")
+
             self.cursor.execute("""CREATE TABLE users (
                             username TEXT,
                             password TEXT,
@@ -349,15 +354,36 @@ class Database:
         if len(founds) == 0:
             self.delete_token(token_id)
             raise Exception("Your token is either invalid or depricated due to long inactivity!")
-        elif len(founds) > 10:
+        elif len(founds) > 20000:
             raise Exception("Your connection is showing a suspicious pattern!")
         else:
             self.get_token_by_id(token_id)
 
+    def check_ip(self, ip):
+        self.refresh_ip_times()
+        self.cursor.execute("""SELECT * FROM ip_time WHERE ip=:ip""",
+                            {'ip': ip})
+        founds = self.cursor.fetchall()
+        if len(founds) > 100:
+            raise Exception("DDoS protection activated!")
+        else:
+            with self.conn:
+                ip_dict = {'ip': ip, 'time': datetime.datetime.now()}
+                columns = ', '.join(ip_dict.keys())
+                placeholders = ':' + ', :'.join(ip_dict.keys())
+                query = 'INSERT INTO ip_time (%s) VALUES (%s)' % (columns, placeholders)
+                self.cursor.execute(query, ip_dict)
+
+
     def refresh_token_times(self):
+        a_minute_ago = datetime.datetime.now() - datetime.timedelta(minutes=100)
+        with self.conn:
+            self.cursor.execute("""DELETE FROM token_time WHERE time < ?""", [a_minute_ago])
+
+    def refresh_ip_times(self):
         a_minute_ago = datetime.datetime.now() - datetime.timedelta(minutes=1)
         with self.conn:
-            self.cursor.execute("""DELETE FROM tokens WHERE time < ?""", [a_minute_ago])
+            self.cursor.execute("""DELETE FROM ip_time WHERE time < ?""", [a_minute_ago])
 
     ### Ticket and Conversation methods
 
