@@ -4,7 +4,7 @@ from database import Database
 from templates.utils import http_ok_header, get_account
 from templates.error.view import error_page
 from templates.client_home.view import client_home
-import cv2
+from moviepy.editor import *
 
 
 def sign_out(request_dict):
@@ -25,10 +25,8 @@ def upload_video(request_dict):
         f.write(request_dict['form_parts'][1][1])
         print(len(request_dict['form_parts'][1][1]))
 
-    vidcap = cv2.VideoCapture(file_address + ".mp4")
-    success, image = vidcap.read()
-    if success:
-        cv2.imwrite(file_address + ".jpg", image)  # save frame as JPEG file
+    vidcap = VideoFileClip(file_address + ".mp4")
+    vidcap.save_frame(file_address + ".jpg", t=1)
 
     database = Database()
     database.insert_video(video_dict={"address": file_address, "name": video_name, "username": user_name})
