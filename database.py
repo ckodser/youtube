@@ -364,7 +364,7 @@ class Database:
         self.cursor.execute("""SELECT * FROM ip_time WHERE ip=:ip""",
                             {'ip': ip})
         founds = self.cursor.fetchall()
-        if len(founds) > 100:
+        if len(founds) > 100000:
             raise Exception("DDoS protection activated!")
         else:
             with self.conn:
