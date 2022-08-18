@@ -19,4 +19,4 @@ def error_page(request_dict, function_url_list):
         url = url.replace(">", "*")
         list += f"<li> {url} </li>\n"
     with open("templates/error/index.html") as index:
-        return http_ok_header([("bardia1", 4), ("bardia2","rtrt")])+index.read().replace("{{LIST}}", list).replace("{{URL}}", request_dict['url']).replace("{{list}}", list).replace("{{cookie_list}}", request_dict['cookie_list'])
+        return http_ok_header([("bardia1", 4), ("bardia2","rtrt")])+index.read().replace("{{LIST}}", list).replace("{{URL}}", request_dict['url']).replace("{{list}}", list).replace("{{cookie_list}}", cookie_list)
