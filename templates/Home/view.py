@@ -3,7 +3,6 @@ import random
 from database import Database
 from templates.utils import http_ok_header, get_account
 from templates.error.view import error_page
-from templates.client_home.view import client_home
 from moviepy.editor import *
 
 

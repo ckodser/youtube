@@ -1,6 +1,5 @@
 from ..utils import get_file_packet
 from database import Database
-from ..client_home.view import client_home
 from templates.utils import http_ok_header
 from urllib.parse import unquote_plus
 

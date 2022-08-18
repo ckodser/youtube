@@ -1,5 +1,4 @@
 from ..utils import get_file_packet
-from ..client_home.view import client_home
 from database import Database
 from ..login.view import login
 from templates.utils import http_ok_header
