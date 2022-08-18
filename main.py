@@ -251,12 +251,7 @@ if __name__ == "__main__":
         (forward_func, "*")
     ]
     # database.insert_video(video_dict={"address": "1.mp4", "name": "rain"})
-    print("user open site by: ", "http://" + str(HOST) + ":" + str(USERPORT) + "/home")
-    print("admin open site by: ", "http://" + str(HOST) + ":" + str(ADMINPORT) + "/home")
-
-    x = threading.Thread(target=start_listening, args=(HOST, USERPORT, function_list, False, None))
-    y = threading.Thread(target=start_listening, args=(HOST, ADMINPORT, function_list, True, None))
+    print("open site by: ", "http://" + str(HOST) + ":" + str(USERPORT) + "/home")
+    x = threading.Thread(target=start_listening, args=(HOST, USERPORT, function_list, True, None))
     x.start()
-    y.start()
     x.join()
-    y.join()
