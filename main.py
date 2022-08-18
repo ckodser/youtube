@@ -188,7 +188,7 @@ def start_listening(HOST, PORT, function_url_list, admin, allowed_ip):
                             if answer == 404:
                                 print(f"Connected by {addr}")
                                 print(method, url, request_dict)
-                                print("ERROR")
+                                print(url, "ERROR")
                                 answer = error_page(request_dict, function_url_list)
                             if answer.__class__ == str:
                                 answer = answer.encode()
