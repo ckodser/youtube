@@ -196,8 +196,8 @@ def start_listening(HOST, PORT, function_url_list, admin, allowed_ip):
                         print("conn closed...")
                         if conn is not None:
                             conn.close()
-        except:
-            print("server error happened!")
+        except Exception as e:
+            print("server error happened!", e)
 
     print("Server stopped, Good Bye!")
 
