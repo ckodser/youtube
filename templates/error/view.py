@@ -1,6 +1,7 @@
 from templates.utils import http_ok_header
 
 def error_page(request_dict, function_url_list):
+    print("request dict", len(request_dict), request_dict)
     list = ""
     for k in request_dict.keys():
         if k != "Cookie":
