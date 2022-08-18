@@ -36,7 +36,11 @@ def to_request_dict(data):
     request_dict = {}
     for row in data:
         if row.find(":") != -1:
-            request_dict[row[:row.find(":")]] = row[row.find(":") + 2:].rstrip("\r")
+            key=row[:row.find(":")]
+            if key=="cookie":
+                key="Cookie"
+            request_dict[key] = row[row.find(":") + 2:].rstrip("\r")
+
     if "Cookie" in request_dict:
         cookies = request_dict["Cookie"].split(";")
         cookies_dict = {}
